@@ -86,8 +86,8 @@ class Model:
     def predict(self, fitted_model, data: InputData):
         """
         This method is used for defining and running of the evaluation strategy
-        to predict with the data provided
 
+        to predict with the data provided
         :param fitted_model: trained model object
         :param data: data used for prediction
         """
