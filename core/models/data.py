@@ -6,10 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-<<<<<<< HEAD
 from core.algorithms.time_series.lagged_features import prepare_lagged_ts_for_prediction
-=======
->>>>>>> 573f55f... Time series forecasting improved
 from core.models.preprocessing import ImputationStrategy
 from core.repository.dataset_types import DataTypesEnum
 from core.repository.tasks import Task, TaskTypesEnum
@@ -89,14 +86,6 @@ class InputData(Data):
         data_type = outputs[0].data_type
         idx = outputs[0].idx
 
-        # TODO process multivariate predict
-        if len(idx) < len(outputs[0].predict):
-            idx = np.asarray(list(idx) + [np.nan])
-
-        # TODO process multivariate target
-        if target is not None and len(target) < len(outputs[0].predict):
-            target = np.asarray(list(target) + [np.nan])
-
         dataset_merging_funcs = {
             DataTypesEnum.forecasted_ts: _combine_datasets_ts,
             DataTypesEnum.ts: _combine_datasets_ts,
@@ -110,7 +99,6 @@ class InputData(Data):
                          data_type=data_type)
 
     def subset(self, start: int, end: int):
-<<<<<<< HEAD
         if not (0 <= start <= end <= len(self.idx)):
             raise ValueError('Incorrect boundaries for subset')
         new_features = None
@@ -129,13 +117,6 @@ class InputData(Data):
             pass
 
         return prepared_data
-=======
-        new_features = None
-        if self.features is not None:
-            new_features = self.features[start:end]
-        return InputData(idx=self.idx[start:end], features=new_features,
-                         target=self.target[start:end], task=self.task, data_type=self.data_type)
->>>>>>> 573f55f... Time series forecasting improved
 
 
 @dataclass
@@ -189,7 +170,6 @@ def _combine_datasets_ts(outputs: List[OutputData]):
     for elem in outputs:
         predict = elem.predict
         if len(elem.predict) != expected_len:
-<<<<<<< HEAD
             raise ValueError(f'Non-equal prediction length: {len(elem.predict)} and {expected_len}')
         features_list.append(predict)
 
@@ -197,17 +177,6 @@ def _combine_datasets_ts(outputs: List[OutputData]):
         features = np.column_stack(features_list)
     else:
         features = features_list[0]
-=======
-            if isinstance(elem.predict, list):
-                predict = np.zeros(expected_len - len(elem.predict)) + elem.predict
-            else:
-                zeros = np.zeros((expected_len - len(predict), *predict.shape[1:]))
-                predict = np.concatenate((zeros, predict))
-
-        features.append(predict)
-
-    features = np.column_stack(features)
->>>>>>> 573f55f... Time series forecasting improved
 
     return features
 
