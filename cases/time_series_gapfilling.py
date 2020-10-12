@@ -44,7 +44,7 @@ def plot_result(data):
     plt.show()
 
 
-# Example of using the algorithm to fill in gaps in a time series with a gap of 500 elements
+# Example of using the algorithm to fill in gaps in a time series with a gap of 1000 elements
 if __name__ == '__main__':
     # Load dataframe
     dataframe = pd.read_csv('./data/gapfilling/TS_temperature_gapfilling.csv')
@@ -52,13 +52,13 @@ if __name__ == '__main__':
 
     # Filling in gaps based on inverted ridge regression model
     Gapfiller_ridge = AdvancedGapfiller(gap_value=-100.0)
-    withoutgap_arr_ridge = Gapfiller_ridge.inverse_ridge(np.array(dataframe['With_gap']), max_window_size=350)
+    withoutgap_arr_ridge = Gapfiller_ridge.inverse_ridge(np.array(dataframe['With_gap']), max_window_size=250)
     dataframe['Ridge'] = withoutgap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
     Gapfiller_composite = AdvancedGapfiller(gap_value=-100.0)
     withoutgap_arr_composite = Gapfiller_composite.composite_fill_gaps(np.array(dataframe['With_gap']),
-                                                                       max_window_size=700)
+                                                                       max_window_size=1000)
     dataframe['Composite'] = withoutgap_arr_composite
 
     # Display metrics
