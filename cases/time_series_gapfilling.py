@@ -1,8 +1,11 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, median_absolute_error
 
+from core.utils import project_root
 from utilities.ts_gapfilling import AdvancedGapfiller
 
 
@@ -45,9 +48,12 @@ def plot_result(data):
 
 
 # Example of using the algorithm to fill in gaps in a time series with a gap of 1000 elements
+# The data is daily air temperature values from the weather station
 if __name__ == '__main__':
     # Load dataframe
-    dataframe = pd.read_csv('./data/gapfilling/TS_temperature_gapfilling.csv')
+    file_path = 'cases/data/gapfilling/TS_temperature_gapfilling.csv'
+    full_path = os.path.join(str(project_root()), file_path)
+    dataframe = pd.read_csv(full_path)
     dataframe['Date'] = pd.to_datetime(dataframe['Date'])
 
     # Filling in gaps based on inverted ridge regression model
