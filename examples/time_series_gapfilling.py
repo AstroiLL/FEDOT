@@ -23,10 +23,10 @@ def simulated_data(length: int = 2000, gap_size: int = 100, gap_value: float = -
 
     sinusoidal_data = np.linspace(-5 * np.pi, 5 * np.pi, length)
     sinusoidal_data = np.sin(sinusoidal_data)
-    simulated_array = np.random.normal(loc=0.0, scale=0.1, size=length)
+    simulated_noise = np.random.normal(loc=0.0, scale=0.1, size=length)
 
     # Combining a sine wave and random noise
-    simulated_data = sinusoidal_data + simulated_array
+    simulated_data = sinusoidal_data + simulated_noise
 
     random_value = random.randint(500, length - (gap_size + 1))
     simulated_data[random_value: (random_value + gap_size)] = gap_value
