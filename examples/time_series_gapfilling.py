@@ -335,7 +335,7 @@ class TSGapfiller(Gapfiller):
                                   task=task_to_solve,
                                   data_type=DataTypesEnum.ts)
 
-            # Цепочка для задачи заполнения пропусков
+            # Chain for the task of filling in gaps
             ref_chain = get_composite_chain()
             ref_chain.fit_from_scratch(train_data)
             predicted = ref_chain.forecast(initial_data=train_data, supplementary_data=test_data).predict
