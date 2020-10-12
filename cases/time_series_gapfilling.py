@@ -2,17 +2,13 @@ import numpy as np
 import pandas as pd
 
 from utilities.ts_gapfilling import AdvancedGapfiller
-import numpy as np
-import pandas as pd
-
-from utilities.ts_gapfilling import AdvancedGapfiller
 
 
 def check_metrics():
     pass
 
 
-def plot_result()
+def plot_result():
     pass
 
 
