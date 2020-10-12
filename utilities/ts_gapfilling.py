@@ -11,7 +11,7 @@ from core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
 class SimpleGapfiller:
     """
     Base class used for filling in the gaps in time series with simple methods.
-    Methods from the Gapfiller class can be used for comparison with more complex models in class TSGapfiller
+    Methods from the SimpleGapfiller class can be used for comparison with more complex models in class AdvancedGapfiller
 
     :param gap_value: value, which identify gap elements in array
     """
