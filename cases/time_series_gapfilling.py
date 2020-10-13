@@ -58,14 +58,14 @@ if __name__ == '__main__':
 
     # Filling in gaps based on inverted ridge regression model
     gapfiller_ridge = AdvancedGapfiller(gap_value=-100.0)
-    withoutgap_arr_ridge = gapfiller_ridge.inverse_ridge(np.array(dataframe['with_gap']), max_window_size=250)
-    dataframe['ridge'] = withoutgap_arr_ridge
+    without_gap_arr_ridge = gapfiller_ridge.inverse_ridge(np.array(dataframe['with_gap']), max_window_size=250)
+    dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
     gapfiller_composite = AdvancedGapfiller(gap_value=-100.0)
-    withoutgap_arr_composite = gapfiller_composite.composite_fill_gaps(np.array(dataframe['with_gap']),
-                                                                       max_window_size=1000)
-    dataframe['composite'] = withoutgap_arr_composite
+    without_gap_arr_composite = gapfiller_composite.composite_fill_gaps(np.array(dataframe['with_gap']),
+                                                                        max_window_size=1000)
+    dataframe['composite'] = without_gap_arr_composite
 
     # Display metrics
     check_metrics(dataframe)
