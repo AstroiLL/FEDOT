@@ -24,13 +24,13 @@ def print_metrics(data):
             print('Composite chain of 5 models')
 
         mae_metric = mean_absolute_error(actual, predicted)
-        print('Mean absolute error -', round(mae_metric, 2))
+        print(f"Mean absolute error -, {round(mae_metric, 2)}")
 
         rmse_metric = (mean_squared_error(actual, predicted)) ** 0.5
-        print('RMSE -', round(rmse_metric, 2))
+        print(f"Root mean squared error -, {round(rmse_metric, 2)}")
 
         median_ae_metric = median_absolute_error(actual, predicted)
-        print('Median absolute error -', round(median_ae_metric, 2), '\n')
+        print(f"Median absolute error -, {round(median_ae_metric, 2)} \n")
 
 
 def plot_result(data):
