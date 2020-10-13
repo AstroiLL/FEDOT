@@ -34,11 +34,11 @@ if __name__ == '__main__':
     tmp_data = simulated_data()
 
     # Filling in gaps
-    Gapfiller = AdvancedGapfiller(gap_value=-100.0)
-    withoutgap_arr = Gapfiller.inverse_ridge(tmp_data, max_window_size=400)
+    gapfiller = AdvancedGapfiller(gap_value=-100.0)
+    withoutgap_arr = gapfiller.inverse_ridge(tmp_data, max_window_size=400)
 
-    SimpleGapfill = SimpleGapfiller(gap_value=-100.0)
-    withoutgap_arr_poly = SimpleGapfill.local_poly_approximation(tmp_data, 4, 150)
+    simple_gapfill = SimpleGapfiller(gap_value=-100.0)
+    withoutgap_arr_poly = simple_gapfill.local_poly_approximation(tmp_data, 4, 150)
 
     plt.plot(withoutgap_arr, c='blue', alpha=0.5)
     plt.plot(withoutgap_arr_poly, c='orange', alpha=0.4)
