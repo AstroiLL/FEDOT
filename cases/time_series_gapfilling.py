@@ -10,12 +10,12 @@ from utilities.ts_gapfilling import AdvancedGapfiller
 
 
 def check_metrics(data):
-    gap_array = np.array(data['With_gap'])
+    gap_array = np.array(data['with_gap'])
     gap_ids = np.argwhere(gap_array == -100.0)
 
-    actual = np.array(data['Temperature'])[gap_ids]
-    ridge_predicted = np.array(data['Ridge'])[gap_ids]
-    composite_predicted = np.array(data['Composite'])[gap_ids]
+    actual = np.array(data['temperature'])[gap_ids]
+    ridge_predicted = np.array(data['ridge'])[gap_ids]
+    composite_predicted = np.array(data['composite'])[gap_ids]
 
     for i, predicted in enumerate([ridge_predicted, composite_predicted]):
         if i == 0:
@@ -35,13 +35,13 @@ def check_metrics(data):
 
 def plot_result(data):
     # Plot predicted values
-    gap_array = np.array(data['With_gap'])
+    gap_array = np.array(data['with_gap'])
     masked_array = np.ma.masked_where(gap_array == -100.0, gap_array)
 
-    plt.plot(data['Date'], data['Temperature'], c='blue', alpha=0.5, label='Actual values', linewidth=1)
-    plt.plot(data['Date'], data['Ridge'], c='orange', alpha=0.8, label='Inverse ridge gapfilling', linewidth=1)
-    plt.plot(data['Date'], data['Composite'], c='red', alpha=0.8, label='Composite gapfilling', linewidth=1)
-    plt.plot(data['Date'], masked_array, c='blue')
+    plt.plot(data['date'], data['temperature'], c='blue', alpha=0.5, label='Actual values', linewidth=1)
+    plt.plot(data['date'], data['ridge'], c='orange', alpha=0.8, label='Inverse ridge gapfilling', linewidth=1)
+    plt.plot(data['date'], data['composite'], c='red', alpha=0.8, label='Composite gapfilling', linewidth=1)
+    plt.plot(data['date'], masked_array, c='blue')
     plt.grid()
     plt.legend()
     plt.show()
@@ -54,18 +54,18 @@ if __name__ == '__main__':
     file_path = 'cases/data/gapfilling/TS_temperature_gapfilling.csv'
     full_path = os.path.join(str(project_root()), file_path)
     dataframe = pd.read_csv(full_path)
-    dataframe['Date'] = pd.to_datetime(dataframe['Date'])
+    dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Filling in gaps based on inverted ridge regression model
     Gapfiller_ridge = AdvancedGapfiller(gap_value=-100.0)
-    withoutgap_arr_ridge = Gapfiller_ridge.inverse_ridge(np.array(dataframe['With_gap']), max_window_size=250)
-    dataframe['Ridge'] = withoutgap_arr_ridge
+    withoutgap_arr_ridge = Gapfiller_ridge.inverse_ridge(np.array(dataframe['with_gap']), max_window_size=250)
+    dataframe['ridge'] = withoutgap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
     Gapfiller_composite = AdvancedGapfiller(gap_value=-100.0)
-    withoutgap_arr_composite = Gapfiller_composite.composite_fill_gaps(np.array(dataframe['With_gap']),
+    withoutgap_arr_composite = Gapfiller_composite.composite_fill_gaps(np.array(dataframe['with_gap']),
                                                                        max_window_size=1000)
-    dataframe['Composite'] = withoutgap_arr_composite
+    dataframe['composite'] = withoutgap_arr_composite
 
     # Display metrics
     check_metrics(dataframe)
