@@ -8,10 +8,10 @@ from core.repository.dataset_types import DataTypesEnum
 from core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
 
 
-class SimpleGapfiller:
+class SimpleGapFiller:
     """
     Base class used for filling in the gaps in time series with simple methods.
-    Methods from the SimpleGapfiller class can be used for comparison with more complex models in class AdvancedGapfiller
+    Methods from the SimpleGapFiller class can be used for comparison with more complex models in class ModelGapFiller
 
     :param gap_value: value, which identify gap elements in array
     """
@@ -118,7 +118,7 @@ class SimpleGapfiller:
 
         :param input_data: array with gaps
         :param degree: degree of a polynomial function
-        :param n_neighbors: the number of neighboring known elements of the time series that the approximation is based on
+        :param n_neighbors: the number of neighboring known elements of time series that the approximation is based on
         :return: array without gaps
         """
 
@@ -169,7 +169,7 @@ class SimpleGapfiller:
         return output_data
 
 
-class AdvancedGapfiller(SimpleGapfiller):
+class ModelGapFiller(SimpleGapFiller):
     """
     Class used for filling in the gaps in time series
 

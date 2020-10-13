@@ -3,10 +3,10 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utilities.ts_gapfilling import SimpleGapfiller, AdvancedGapfiller
+from utilities.ts_gapfilling import SimpleGapFiller, ModelGapFiller
 
 
-def simulated_data(length: int = 2000, gap_size: int = 100, gap_value: float = -100.0):
+def generate_synthetic_data(length: int = 2000, gap_size: int = 100, gap_value: float = -100.0):
     """
     The function generates a synthetic one-dimensional array with omissions
 
@@ -18,26 +18,26 @@ def simulated_data(length: int = 2000, gap_size: int = 100, gap_value: float = -
 
     sinusoidal_data = np.linspace(-6 * np.pi, 6 * np.pi, length)
     sinusoidal_data = np.sin(sinusoidal_data)
-    simulated_noise = np.random.normal(loc=0.0, scale=0.1, size=length)
+    random_noise = np.random.normal(loc=0.0, scale=0.1, size=length)
 
     # Combining a sine wave and random noise
-    simulated_data = sinusoidal_data + simulated_noise
+    synthetic_data = sinusoidal_data + random_noise
 
     random_value = random.randint(500, length - 500)
-    simulated_data[random_value: (random_value + gap_size)] = gap_value
-    return simulated_data
+    synthetic_data[random_value: (random_value + gap_size)] = gap_value
+    return synthetic_data
 
 
 # Example of applying the algorithm
 if __name__ == '__main__':
     # Get synthetic time series
-    tmp_data = simulated_data()
+    tmp_data = generate_synthetic_data()
 
     # Filling in gaps
-    gapfiller = AdvancedGapfiller(gap_value=-100.0)
+    gapfiller = ModelGapFiller(gap_value=-100.0)
     without_gap_arr = gapfiller.inverse_ridge(tmp_data, max_window_size=400)
 
-    simple_gapfill = SimpleGapfiller(gap_value=-100.0)
+    simple_gapfill = SimpleGapFiller(gap_value=-100.0)
     without_gap_arr_poly = simple_gapfill.local_poly_approximation(tmp_data, 4, 150)
 
     plt.plot(without_gap_arr, c='blue', alpha=0.5)

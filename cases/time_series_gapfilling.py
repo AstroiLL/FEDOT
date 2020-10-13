@@ -6,22 +6,26 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, median_absolute_error
 
 from core.utils import project_root
-from utilities.ts_gapfilling import AdvancedGapfiller
+from utilities.ts_gapfilling import ModelGapFiller
 
 
-def print_metrics(data):
-    gap_array = np.array(data['with_gap'])
+def print_metrics(dataframe):
+    """
+    The function displays 3 metrics: Mean absolute error, Root mean squared error and Median absolute error
+
+    :param: dataframe with columns 'date','temperature','ridge','composite','with_gap'
+    """
+
+    gap_array = np.array(dataframe['with_gap'])
     gap_ids = np.argwhere(gap_array == -100.0)
 
-    actual = np.array(data['temperature'])[gap_ids]
-    ridge_predicted = np.array(data['ridge'])[gap_ids]
-    composite_predicted = np.array(data['composite'])[gap_ids]
+    actual = np.array(dataframe['temperature'])[gap_ids]
+    ridge_predicted = np.array(dataframe['ridge'])[gap_ids]
+    composite_predicted = np.array(dataframe['composite'])[gap_ids]
 
-    for i, predicted in enumerate([ridge_predicted, composite_predicted]):
-        if i == 0:
-            print('Inverted ridge regression model')
-        else:
-            print('Composite chain of 5 models')
+    model_labels = ['Inverted ridge regression', 'Composite model']
+    for predicted, model_label in zip([ridge_predicted, composite_predicted], model_labels):
+        print(f"{model_label}")
 
         mae_metric = mean_absolute_error(actual, predicted)
         print(f"Mean absolute error -, {round(mae_metric, 2)}")
@@ -33,15 +37,21 @@ def print_metrics(data):
         print(f"Median absolute error -, {round(median_ae_metric, 2)} \n")
 
 
-def plot_result(data):
-    # Plot predicted values
-    gap_array = np.array(data['with_gap'])
+def plot_result(dataframe):
+    """
+    The function draws a graph based on the dataframe
+
+    :param: dataframe with columns 'date','temperature','ridge','composite','with_gap'
+    """
+
+    gap_array = np.array(dataframe['with_gap'])
     masked_array = np.ma.masked_where(gap_array == -100.0, gap_array)
 
-    plt.plot(data['date'], data['temperature'], c='blue', alpha=0.5, label='Actual values', linewidth=1)
-    plt.plot(data['date'], data['ridge'], c='orange', alpha=0.8, label='Inverse ridge gapfilling', linewidth=1)
-    plt.plot(data['date'], data['composite'], c='red', alpha=0.8, label='Composite gapfilling', linewidth=1)
-    plt.plot(data['date'], masked_array, c='blue')
+    plt.plot(dataframe['date'], dataframe['temperature'], c='blue', alpha=0.5, label='Actual values', linewidth=1)
+    plt.plot(dataframe['date'], dataframe['ridge'], c='orange', alpha=0.8, label='Inverse ridge gapfilling',
+             linewidth=1)
+    plt.plot(dataframe['date'], dataframe['composite'], c='red', alpha=0.8, label='Composite gapfilling', linewidth=1)
+    plt.plot(dataframe['date'], masked_array, c='blue')
     plt.grid()
     plt.legend()
     plt.show()
@@ -57,12 +67,12 @@ if __name__ == '__main__':
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Filling in gaps based on inverted ridge regression model
-    gapfiller_ridge = AdvancedGapfiller(gap_value=-100.0)
+    gapfiller_ridge = ModelGapFiller(gap_value=-100.0)
     without_gap_arr_ridge = gapfiller_ridge.inverse_ridge(np.array(dataframe['with_gap']), max_window_size=250)
     dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
-    gapfiller_composite = AdvancedGapfiller(gap_value=-100.0)
+    gapfiller_composite = ModelGapFiller(gap_value=-100.0)
     without_gap_arr_composite = gapfiller_composite.composite_fill_gaps(np.array(dataframe['with_gap']),
                                                                         max_window_size=1000)
     dataframe['composite'] = without_gap_arr_composite
