@@ -9,7 +9,7 @@ from core.utils import project_root
 from utilities.ts_gapfilling import AdvancedGapfiller
 
 
-def check_metrics(data):
+def print_metrics(data):
     gap_array = np.array(data['with_gap'])
     gap_ids = np.argwhere(gap_array == -100.0)
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     dataframe['composite'] = without_gap_arr_composite
 
     # Display metrics
-    check_metrics(dataframe)
+    print_metrics(dataframe)
 
     # Visualise predictions
     plot_result(dataframe)
