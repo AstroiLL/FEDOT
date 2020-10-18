@@ -224,3 +224,42 @@ def _combine_datasets_common(outputs: List[OutputData]):
             for i in range(number_of_variables_in_prediction):
                 features.append(elem.predict[:, i])
     return features
+
+
+def clean_nans_in_data(data: InputData, array_with_nans: np.ndarray):
+    data_to_clean = copy(data)
+    if array_with_nans is None:
+        return data_to_clean
+
+    nans = np.isnan(array_with_nans)
+
+    idx = data_to_clean.idx
+    features = data_to_clean.features
+    target = data_to_clean.target
+
+    # remove all rows with nan in array_with_nans
+    if len(array_with_nans.shape) == 1:
+        idx = idx[~nans]
+        features = features[~nans] if data.features is not None else features
+        target = target[~nans] if data.target is not None else target
+    elif len(array_with_nans.shape) == 2:
+        idx = idx[~nans.any(axis=1)]
+        features = features[~nans.any(axis=1)] if features is not None else features
+        target = target[~nans.any(axis=1)] if target is not None else target
+    elif len(array_with_nans.shape) == 3:
+        for dim in range(array_with_nans.shape[2]):
+            idx = data.idx[~nans.any(axis=1).any(axis=1)]
+            if data.features is not None:
+                features = \
+                    data.features[~np.isnan(array_with_nans[:, :, dim]).any(axis=1)]
+            if data.target is not None:
+                target = \
+                    data.target[~np.isnan(array_with_nans[:, :, dim]).any(axis=1)]
+    else:
+        raise NotImplementedError('Dimensionality not supported')
+
+    data_to_clean.idx = idx
+    data_to_clean.features = features
+    data_to_clean.target = target
+
+    return data_to_clean
