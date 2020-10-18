@@ -86,6 +86,14 @@ class InputData(Data):
         data_type = outputs[0].data_type
         idx = outputs[0].idx
 
+        # TODO process multivariate predict
+        if len(idx) < len(outputs[0].predict):
+            idx = np.asarray(list(idx) + [np.nan])
+
+        # TODO process multivariate target
+        if target is not None and len(target) < len(outputs[0].predict):
+            target = np.asarray(list(target) + [np.nan])
+
         dataset_merging_funcs = {
             DataTypesEnum.forecasted_ts: _combine_datasets_ts,
             DataTypesEnum.ts: _combine_datasets_ts,

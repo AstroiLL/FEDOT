@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import timedelta
 
 import numpy as np
@@ -124,7 +125,7 @@ class Model:
                 self.params = DEFAULT_PARAMS_STUB
         except Exception as ex:
             print(f'Tuning failed because of {ex}')
-            fitted_model = self._eval_strategy.fit(train_data=data)
+            fitted_model = self._eval_strategy.fit(train_data=data_for_fit)
             self.params = DEFAULT_PARAMS_STUB
 
         predict_train = self.predict(fitted_model, data)
