@@ -267,7 +267,7 @@ class ModelGapFiller(SimpleGapFiller):
             node_trend_model = SecondaryNode('linear', nodes_from=[node_first])
             node_residual_model = SecondaryNode('linear', nodes_from=[node_second])
 
-            node_final = SecondaryNode('additive_data_model', nodes_from=[node_trend_model, node_residual_model])
+            node_final = SecondaryNode('linear', nodes_from=[node_trend_model, node_residual_model])
             chain = TsForecastingChain(node_final)
             return (chain)
 
