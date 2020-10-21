@@ -108,7 +108,7 @@ class Log:
         """
         Restore an unpickled dict state and assign state items
         to the new instance’s dictionary.
-
+        
         :param state: pickled class attributes
         """
         self.__dict__.update(state)

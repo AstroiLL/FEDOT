@@ -2,6 +2,7 @@ from copy import copy
 from datetime import timedelta
 from typing import Optional
 
+import numpy as np
 import tensorflow as tf
 
 from core.models.data import InputData, OutputData

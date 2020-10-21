@@ -13,13 +13,14 @@ from PIL import Image
 from imageio import get_writer, imread
 
 from core.composer.chain import Chain, as_nx_graph
-from core.utils import default_fedot_data_dir
+from core.utils import project_root
 
 
 class ComposerVisualiser:
-    default_data_dir = default_fedot_data_dir()
-    temp_path = os.path.join(default_data_dir, 'composing_history')
-    if 'composing_history' not in os.listdir(default_data_dir):
+    root_parent_path = os.path.join('../', str(project_root()))
+    root_parent_path_dirname = os.path.dirname(root_parent_path)
+    temp_path = os.path.join(root_parent_path_dirname, 'tmp/')
+    if 'tmp' not in os.listdir(root_parent_path_dirname):
         os.mkdir(temp_path)
     gif_prefix = 'for_gif_'
 

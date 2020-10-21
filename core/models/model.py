@@ -15,7 +15,7 @@ DEFAULT_PARAMS_STUB = 'default_params'
 class Model:
     """
     Base object with fit/predict methods defining the evaluation strategy for the task
-
+    
     :param model_type: str type of the model defined in model repository
     :param log: Log object to record messages
     """
@@ -124,7 +124,7 @@ class Model:
                 self.params = DEFAULT_PARAMS_STUB
         except Exception as ex:
             print(f'Tuning failed because of {ex}')
-            fitted_model = self._eval_strategy.fit(train_data=data_for_fit)
+            fitted_model = self._eval_strategy.fit(train_data=data)
             self.params = DEFAULT_PARAMS_STUB
 
         predict_train = self.predict(fitted_model, data)
