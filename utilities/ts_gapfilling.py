@@ -54,10 +54,7 @@ class SimpleGapFiller:
         :return: array without gaps
         """
 
-        try:
-            output_data = np.array(input_data)
-        except Exception:
-            raise ValueError('input data should be one-dimensional array')
+        output_data = np.array(input_data)
 
         # The indices of the known elements
         non_nan = np.ravel(np.argwhere(output_data != self.gap_value))
@@ -78,10 +75,7 @@ class SimpleGapFiller:
         :return: array without gaps
         """
 
-        try:
-            output_data = np.array(input_data)
-        except Exception:
-            raise ValueError('input data should be one-dimensional array')
+        output_data = np.array(input_data)
 
         i_gaps = np.ravel(np.argwhere(output_data == self.gap_value))
 
@@ -122,10 +116,7 @@ class SimpleGapFiller:
         :return: array without gaps
         """
 
-        try:
-            output_data = np.array(input_data)
-        except Exception:
-            raise ValueError('input data should be one-dimensional array')
+        output_data = np.array(input_data)
 
         # Gap indices
         gap_list = np.ravel(np.argwhere(output_data == self.gap_value))
@@ -185,10 +176,7 @@ class ModelGapFiller(SimpleGapFiller):
         :return: array without gaps
         """
 
-        try:
-            output_data = np.array(input_data)
-        except Exception:
-            raise ValueError('input data should be one-dimensional array')
+        output_data = np.array(input_data)
 
         # Gap indices
         gap_list = np.ravel(np.argwhere(output_data == self.gap_value))
@@ -271,10 +259,7 @@ class ModelGapFiller(SimpleGapFiller):
             chain = TsForecastingChain(node_final)
             return (chain)
 
-        try:
-            output_data = np.array(input_data)
-        except Exception:
-            raise ValueError('input data should be one-dimensional array')
+        output_data = np.array(input_data)
 
         # Gap indices
         gap_list = np.ravel(np.argwhere(output_data == self.gap_value))
