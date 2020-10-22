@@ -74,7 +74,7 @@ class SimpleGapFiller:
 
         :param input_data: array with gaps
         :param degree: degree of a polynomial function
-        :param n_neighbors: the number of neighboring known elements of the time series that the approximation is based on
+        :param n_neighbors: number of neighboring known elements of the time series that the approximation is based on
         :return: array without gaps
         """
 

@@ -216,3 +216,4 @@ def _combine_datasets_common(outputs: List[OutputData]):
             for i in range(number_of_variables_in_prediction):
                 features.append(elem.predict[:, i])
     return features
+

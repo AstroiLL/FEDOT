@@ -133,3 +133,4 @@ def _lagged_data_to_3d(input_data: InputData) -> InputData:
     transformed_data.target = np.asarray(transformed_data.target)[:, :, np.newaxis]
 
     return transformed_data
+
