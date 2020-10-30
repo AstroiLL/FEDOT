@@ -67,13 +67,12 @@ if __name__ == '__main__':
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Filling in gaps based on inverted ridge regression model
-    gapfiller_ridge = ModelGapFiller(gap_value=-100.0)
-    without_gap_arr_ridge = gapfiller_ridge.inverse_ridge(np.array(dataframe['with_gap']), max_window_size=250)
+    fedot_gapfiller = ModelGapFiller(gap_value=-100.0)
+    without_gap_arr_ridge = fedot_gapfiller.inverse_ridge(np.array(dataframe['with_gap']), max_window_size=250)
     dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
-    gapfiller_composite = ModelGapFiller(gap_value=-100.0)
-    without_gap_arr_composite = gapfiller_composite.composite_fill_gaps(np.array(dataframe['with_gap']),
+    without_gap_arr_composite = fedot_gapfiller.composite_fill_gaps(np.array(dataframe['with_gap']),
                                                                         max_window_size=1000)
     dataframe['composite'] = without_gap_arr_composite
 
