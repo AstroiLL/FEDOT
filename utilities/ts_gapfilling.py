@@ -19,33 +19,6 @@ class SimpleGapFiller:
     def __init__(self, gap_value: float = -100.0):
         self.gap_value = gap_value
 
-    def _parse_gap_ids(self, gap_list: list) -> list:
-        """
-        Method allows to parse source array with gaps indexes
-
-        :param gap_list: array with indexes of gaps in array
-        :return: a list with separated gaps in continuous intervals
-        """
-
-        new_gap_list = []
-        local_gaps = []
-        for index, gap in enumerate(gap_list):
-            if index == 0:
-                local_gaps.append(gap)
-            else:
-                prev_gap = gap_list[index - 1]
-                if gap - prev_gap > 1:
-                    # There is a "gap" between gaps
-                    new_gap_list.append(local_gaps)
-
-                    local_gaps = []
-                    local_gaps.append(gap)
-                else:
-                    local_gaps.append(gap)
-        new_gap_list.append(local_gaps)
-
-        return new_gap_list
-
     def linear_interpolation(self, input_data):
         """
         Method allows to restore missing values in an array using linear interpolation
@@ -158,6 +131,33 @@ class SimpleGapFiller:
             output_data[gap] = est_value
 
         return output_data
+
+    def _parse_gap_ids(self, gap_list: list) -> list:
+        """
+        Method allows to parse source array with gaps indexes
+
+        :param gap_list: array with indexes of gaps in array
+        :return: a list with separated gaps in continuous intervals
+        """
+
+        new_gap_list = []
+        local_gaps = []
+        for index, gap in enumerate(gap_list):
+            if index == 0:
+                local_gaps.append(gap)
+            else:
+                prev_gap = gap_list[index - 1]
+                if gap - prev_gap > 1:
+                    # There is a "gap" between gaps
+                    new_gap_list.append(local_gaps)
+
+                    local_gaps = []
+                    local_gaps.append(gap)
+                else:
+                    local_gaps.append(gap)
+        new_gap_list.append(local_gaps)
+
+        return new_gap_list
 
 
 class ModelGapFiller(SimpleGapFiller):
