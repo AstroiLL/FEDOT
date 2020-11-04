@@ -147,7 +147,7 @@ class SimpleGapFiller:
 
     def _parse_gap_ids(self, gap_list: list) -> list:
         """
-        Method allows to parse source array with gaps indexes
+        Method allows parsing source array with gaps indexes
 
         :param gap_list: array with indexes of gaps in array
         :return: a list with separated gaps in continuous intervals
@@ -216,33 +216,12 @@ class ModelGapFiller(SimpleGapFiller):
 
                 # Adaptive prediction interval length
                 len_gap = len(gap)
-                forecast_length = len_gap
-
-                task = Task(TaskTypesEnum.ts_forecasting,
-                            TsForecastingParams(forecast_length=forecast_length,
-                                                max_window_size=max_window_size,
-                                                return_all_steps=True,
-                                                make_future_prediction=True))
-
-                input_data = InputData(idx=np.arange(0, len(timeseries_train_part)),
-                                       features=None,
-                                       target=timeseries_train_part,
-                                       task=task,
-                                       data_type=DataTypesEnum.ts)
-
-                # Making predictions for the missing part in the time series
                 chain = TsForecastingChain(PrimaryNode('ridge'))
-                chain.fit_from_scratch(input_data)
 
-                # "Test data" for making prediction for a specific length
-                test_data = InputData(idx=np.arange(0, len_gap),
-                                      features=None,
-                                      target=None,
-                                      task=task,
-                                      data_type=DataTypesEnum.ts)
-
-                predicted_values = chain.forecast(initial_data=input_data,
-                                                  supplementary_data=test_data).predict
+                predicted_values = self._chain_fit_predict(chain,
+                                                           timeseries_train_part,
+                                                           len_gap,
+                                                           max_window_size)
 
                 if prediction == 'direct':
                     weights.append(np.arange(len_gap, 0, -1))
@@ -263,16 +242,6 @@ class ModelGapFiller(SimpleGapFiller):
 
     def composite_fill_gaps(self, input_data, max_window_size: int = 50):
 
-        def get_composite_chain():
-            node_first = PrimaryNode('trend_data_model')
-            node_second = PrimaryNode('residual_data_model')
-            node_trend_model = SecondaryNode('linear', nodes_from=[node_first])
-            node_residual_model = SecondaryNode('linear', nodes_from=[node_second])
-
-            node_final = SecondaryNode('linear', nodes_from=[node_trend_model, node_residual_model])
-            chain = TsForecastingChain(node_final)
-            return (chain)
-
         output_data = np.array(input_data)
 
         # Gap indices
@@ -286,36 +255,72 @@ class ModelGapFiller(SimpleGapFiller):
 
             # Adaptive prediction interval length
             len_gap = len(gap)
-            forecast_length = len_gap
-
-            # specify the task to solve
-            task_to_solve = Task(TaskTypesEnum.ts_forecasting,
-                                 TsForecastingParams(forecast_length=forecast_length,
-                                                     max_window_size=max_window_size,
-                                                     return_all_steps=True,
-                                                     make_future_prediction=True))
-
-            train_data = InputData(idx=np.arange(0, len(timeseries_train_part)),
-                                   features=None,
-                                   target=timeseries_train_part,
-                                   task=task_to_solve,
-                                   data_type=DataTypesEnum.ts)
-
-            # "Test data" for making prediction for a specific length
-            # Problem when using target array in data, if None is set,
-            # an error occurs
-            test_data = InputData(idx=np.arange(0, len_gap),
-                                  features=None,
-                                  target=np.ones(len_gap),
-                                  task=task_to_solve,
-                                  data_type=DataTypesEnum.ts)
 
             # Chain for the task of filling in gaps
-            ref_chain = get_composite_chain()
-            ref_chain.fit_from_scratch(train_data)
-            predicted = ref_chain.forecast(initial_data=train_data, supplementary_data=test_data).predict
+            chain = self._get_composite_chain()
+            predicted = self._chain_fit_predict(chain,
+                                                timeseries_train_part,
+                                                len_gap,
+                                                max_window_size)
 
             # Replace gaps in an array with predicted values
             output_data[gap] = predicted
             break
         return output_data
+
+    def _get_composite_chain(self):
+        """
+        The method returns prepared chain of 5 models
+
+        :return: TsForecastingChain object
+        """
+
+        node_first = PrimaryNode('trend_data_model')
+        node_second = PrimaryNode('residual_data_model')
+        node_trend_model = SecondaryNode('linear', nodes_from=[node_first])
+        node_residual_model = SecondaryNode('linear', nodes_from=[node_second])
+
+        node_final = SecondaryNode('linear', nodes_from=[node_trend_model,
+                                                         node_residual_model])
+        chain = TsForecastingChain(node_final)
+        return chain
+
+    def _chain_fit_predict(self, chain, timeseries_train: np.array, len_gap: int,
+                            max_window_size: int):
+        """
+        The method makes a prediction as a sequence of elements based on a
+        training sample. There are two main parts: fit model and predict.
+
+        :param chain: TsForecastingChain object
+        :param timeseries_train: part of the time series for training the model
+        :param len_gap: number of elements in the gap
+        :param max_window_size: window length
+        :return: array without gaps
+        """
+
+        task = Task(TaskTypesEnum.ts_forecasting,
+                    TsForecastingParams(forecast_length=len_gap,
+                                        max_window_size=max_window_size,
+                                        return_all_steps=True,
+                                        make_future_prediction=True))
+
+        input_data = InputData(idx=np.arange(0, len(timeseries_train)),
+                               features=None,
+                               target=timeseries_train,
+                               task=task,
+                               data_type=DataTypesEnum.ts)
+
+        # Making predictions for the missing part in the time series
+        chain.fit_from_scratch(input_data)
+
+        # "Test data" for making prediction for a specific length
+        test_data = InputData(idx=np.arange(0, len_gap),
+                              features=None,
+                              target=None,
+                              task=task,
+                              data_type=DataTypesEnum.ts)
+
+        predicted_values = chain.forecast(initial_data=input_data,
+                                          supplementary_data=test_data).predict
+        return predicted_values
+
