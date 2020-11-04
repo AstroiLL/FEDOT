@@ -6,7 +6,8 @@ import numpy as np
 from utilities.ts_gapfilling import SimpleGapFiller, ModelGapFiller
 
 
-def generate_synthetic_data(length: int = 2000, gap_size: int = 100, gap_value: float = -100.0):
+def generate_synthetic_data(length: int = 2000, gap_size: int = 100,
+                            gap_value: float = -100.0):
     """
     The function generates a synthetic one-dimensional array with omissions
 

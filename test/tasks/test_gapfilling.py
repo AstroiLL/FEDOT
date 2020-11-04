@@ -5,7 +5,8 @@ import numpy as np
 from utilities.ts_gapfilling import ModelGapFiller
 from sklearn.metrics import mean_squared_error
 
-def get_synthetic_data(length: int = 2000, gap_size: int = 100, gap_value: float = -100.0):
+def get_synthetic_data(length: int = 2000, gap_size: int = 100,
+                       gap_value: float = -100.0):
     sinusoidal_data = np.linspace(-6 * np.pi, 6 * np.pi, length)
     sinusoidal_data = np.sin(sinusoidal_data)
     random_noise = np.random.normal(loc=0.0, scale=0.1, size=length)
@@ -14,12 +15,13 @@ def get_synthetic_data(length: int = 2000, gap_size: int = 100, gap_value: float
     synthetic_data = sinusoidal_data + random_noise
 
     random_value = random.randint(400, length - 400)
-    real_values = np.array(synthetic_data[random_value: (random_value + gap_size)])
+    real_values = np.array(synthetic_data[random_value:(random_value + gap_size)])
     synthetic_data[random_value: (random_value + gap_size)] = gap_value
     return synthetic_data, real_values
 
 def test_gapfilling_inverse_ridge_correct():
-    arr_with_gaps, real_values = get_synthetic_data(length=1000, gap_size=40, gap_value=-100.0)
+    arr_with_gaps, real_values = get_synthetic_data(length=1000, gap_size=40,
+                                                    gap_value=-100.0)
 
     # Find all gap indices in the array
     id_gaps = np.argwhere(arr_with_gaps == -100.0)

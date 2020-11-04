@@ -3,7 +3,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error, median_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error,\
+    median_absolute_error
 
 from core.utils import project_root
 from utilities.ts_gapfilling import ModelGapFiller
@@ -11,9 +12,11 @@ from utilities.ts_gapfilling import ModelGapFiller
 
 def print_metrics(dataframe):
     """
-    The function displays 3 metrics: Mean absolute error, Root mean squared error and Median absolute error
+    The function displays 3 metrics: Mean absolute error,
+    Root mean squared error and Median absolute error
 
-    :param: dataframe with columns 'date','temperature','ridge','composite','with_gap'
+    :param: dataframe with columns 'date','temperature','ridge','composite',
+    'with_gap'
     """
 
     gap_array = np.array(dataframe['with_gap'])
@@ -41,23 +44,27 @@ def plot_result(dataframe):
     """
     The function draws a graph based on the dataframe
 
-    :param: dataframe with columns 'date','temperature','ridge','composite','with_gap'
+    :param: dataframe with columns 'date','temperature','ridge','composite',
+    'with_gap'
     """
 
     gap_array = np.array(dataframe['with_gap'])
     masked_array = np.ma.masked_where(gap_array == -100.0, gap_array)
 
-    plt.plot(dataframe['date'], dataframe['temperature'], c='blue', alpha=0.5, label='Actual values', linewidth=1)
-    plt.plot(dataframe['date'], dataframe['ridge'], c='orange', alpha=0.8, label='Inverse ridge gapfilling',
-             linewidth=1)
-    plt.plot(dataframe['date'], dataframe['composite'], c='red', alpha=0.8, label='Composite gapfilling', linewidth=1)
+    plt.plot(dataframe['date'], dataframe['temperature'],
+             c='blue', alpha=0.5, label='Actual values', linewidth=1)
+    plt.plot(dataframe['date'], dataframe['ridge'],
+             c='orange', alpha=0.8, label='Inverse ridge gapfilling', linewidth=1)
+    plt.plot(dataframe['date'], dataframe['composite'],
+             c='red', alpha=0.8, label='Composite gapfilling', linewidth=1)
     plt.plot(dataframe['date'], masked_array, c='blue')
     plt.grid()
     plt.legend()
     plt.show()
 
 
-# Example of using the algorithm to fill in gaps in a time series with a gap of 1000 elements
+# Example of using the algorithm to fill in gaps in a time series with a gap
+# of 1000 elements
 # The data is daily air temperature values from the weather station
 if __name__ == '__main__':
     # Load dataframe
@@ -68,12 +75,13 @@ if __name__ == '__main__':
 
     # Filling in gaps based on inverted ridge regression model
     fedot_gapfiller = ModelGapFiller(gap_value=-100.0)
-    without_gap_arr_ridge = fedot_gapfiller.inverse_ridge(np.array(dataframe['with_gap']), max_window_size=250)
+    without_gap_arr_ridge = fedot_gapfiller.inverse_ridge(np.array(dataframe['with_gap']),
+                                                          max_window_size=250)
     dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
     without_gap_arr_composite = fedot_gapfiller.composite_fill_gaps(np.array(dataframe['with_gap']),
-                                                                        max_window_size=1000)
+                                                                    max_window_size=1000)
     dataframe['composite'] = without_gap_arr_composite
 
     # Display metrics

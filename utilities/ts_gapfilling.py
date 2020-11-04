@@ -11,7 +11,8 @@ from core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
 class SimpleGapFiller:
     """
     Base class used for filling in the gaps in time series with simple methods.
-    Methods from the SimpleGapFiller class can be used for comparison with more complex models in class ModelGapFiller
+    Methods from the SimpleGapFiller class can be used for comparison with more
+    complex models in class ModelGapFiller
 
     :param gap_value: value, which identify gap elements in array
     """
@@ -21,7 +22,8 @@ class SimpleGapFiller:
 
     def linear_interpolation(self, input_data):
         """
-        Method allows to restore missing values in an array using linear interpolation
+        Method allows to restore missing values in an array
+        using linear interpolation
 
         :param input_data: array with gaps
         :return: array without gaps
@@ -38,13 +40,16 @@ class SimpleGapFiller:
         output_data = f_interploate(x)
         return output_data
 
-    def local_poly_approximation(self, input_data, degree: int = 2, n_neighbors: int = 5):
+    def local_poly_approximation(self, input_data, degree: int = 2,
+                                 n_neighbors: int = 5):
         """
-        Method allows to restore missing values in an array using Savitzky-Golay filter
+        Method allows to restore missing values in an array
+        using Savitzky-Golay filter
 
         :param input_data: array with gaps
         :param degree: degree of a polynomial function
-        :param n_neighbors: number of neighboring known elements of the time series that the approximation is based on
+        :param n_neighbors: number of neighboring known elements of the time
+        series that the approximation is based on
         :return: array without gaps
         """
 
@@ -58,10 +63,12 @@ class SimpleGapFiller:
             i_known = np.argwhere(output_data != self.gap_value)
             i_known = np.ravel(i_known)
 
-            # Based on the indexes we calculate how far from the gap the known values are located
+            # Based on the indexes we calculate how far from the gap
+            # the known values are located
             id_distances = np.abs(i_known - gap_index)
 
-            # Now we know the indices of the smallest values in the array, so sort indexes
+            # Now we know the indices of the smallest values in the array,
+            # so sort indexes
             sorted_idx = np.argsort(id_distances)
             nearest_values = []
             nearest_indices = []
@@ -78,14 +85,18 @@ class SimpleGapFiller:
 
         return output_data
 
-    def batch_poly_approximation(self, input_data, degree: int = 3, n_neighbors: int = 10):
+    def batch_poly_approximation(self, input_data, degree: int = 3,
+                                 n_neighbors: int = 10):
         """
-        Method allows to restore missing values in an array using batch polynomial approximations.
-        Approximation is applied not for individual omissions, but for intervals of omitted values
+        Method allows to restore missing values in an array using
+        batch polynomial approximations.
+        Approximation is applied not for individual omissions, but for
+        intervals of omitted values
 
         :param input_data: array with gaps
         :param degree: degree of a polynomial function
-        :param n_neighbors: the number of neighboring known elements of time series that the approximation is based on
+        :param n_neighbors: the number of neighboring known elements of
+        time series that the approximation is based on
         :return: array without gaps
         """
 
@@ -104,10 +115,12 @@ class SimpleGapFiller:
             i_known = np.argwhere(output_data != self.gap_value)
             i_known = np.ravel(i_known)
 
-            # Based on the indexes we calculate how far from the gap the known values are located
+            # Based on the indexes we calculate how far from the gap
+            # the known values are located
             id_distances = np.abs(i_known - center_index)
 
-            # Now we know the indices of the smallest values in the array, so sort indexes
+            # Now we know the indices of the smallest values in the array,
+            # so sort indexes
             sorted_idx = np.argsort(id_distances)
 
             # Nearest known values to the gap
@@ -228,7 +241,8 @@ class ModelGapFiller(SimpleGapFiller):
                                       task=task,
                                       data_type=DataTypesEnum.ts)
 
-                predicted_values = chain.forecast(initial_data=input_data, supplementary_data=test_data).predict
+                predicted_values = chain.forecast(initial_data=input_data,
+                                                  supplementary_data=test_data).predict
 
                 if prediction == 'direct':
                     weights.append(np.arange(len_gap, 0, -1))
@@ -288,7 +302,8 @@ class ModelGapFiller(SimpleGapFiller):
                                    data_type=DataTypesEnum.ts)
 
             # "Test data" for making prediction for a specific length
-            # Problem when using target array in data, if None is set, an error occurs
+            # Problem when using target array in data, if None is set,
+            # an error occurs
             test_data = InputData(idx=np.arange(0, len_gap),
                                   features=None,
                                   target=np.ones(len_gap),
