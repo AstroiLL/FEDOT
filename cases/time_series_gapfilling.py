@@ -31,13 +31,13 @@ def print_metrics(dataframe):
         print(f"{model_label}")
 
         mae_metric = mean_absolute_error(actual, predicted)
-        print(f"Mean absolute error -, {round(mae_metric, 2)}")
+        print(f"Mean absolute error - {mae_metric:.2f}")
 
         rmse_metric = (mean_squared_error(actual, predicted)) ** 0.5
-        print(f"Root mean squared error -, {round(rmse_metric, 2)}")
+        print(f"Root mean squared error - {rmse_metric:.2f}")
 
         median_ae_metric = median_absolute_error(actual, predicted)
-        print(f"Median absolute error -, {round(median_ae_metric, 2)} \n")
+        print(f"Median absolute error - {median_ae_metric:.2f} \n")
 
 
 def plot_result(dataframe):
