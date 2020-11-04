@@ -41,7 +41,9 @@ if __name__ == '__main__':
     simple_gapfill = SimpleGapFiller(gap_value=-100.0)
     without_gap_arr_poly = simple_gapfill.local_poly_approximation(tmp_data, 4, 150)
 
-    plt.plot(without_gap_arr, c='blue', alpha=0.5)
-    plt.plot(without_gap_arr_poly, c='orange', alpha=0.4)
+    plt.plot(without_gap_arr, c='blue', alpha=0.5, label = 'Actual values')
+    plt.plot(without_gap_arr_poly, c='orange',
+             alpha=0.4, label = 'Polynomial approximation')
+    plt.legend()
     plt.grid()
     plt.show()
