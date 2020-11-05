@@ -219,6 +219,20 @@ class ModelGapFiller(SimpleGapFiller):
             return weights_list, predicted_values
 
         def inverse(timeseries_data, batch_index, new_gap_list):
+            """
+            The time series method makes an inverse forecast based on the part
+            of the time series that is located to the right of the gap.
+
+            :param timeseries_data: one-dimensional array of a time series
+            :param batch_index: index of the interval (batch) with a gap
+            :param new_gap_list: array with nested lists of gap indexes
+
+            :return weights_list: numpy array with prediction weights for
+            averaging
+            :return predicted_values: numpy array with predicted values in the
+            gap
+            """
+
             gap = new_gap_list[batch_index]
 
             # If the interval with a gap is the last one in the array
