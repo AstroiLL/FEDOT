@@ -80,8 +80,8 @@ if __name__ == '__main__':
     dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
-    without_gap_arr_composite = fedot_gapfiller.composite_fill_gaps(np.array(dataframe['with_gap']),
-                                                                    max_window_size=1000)
+    without_gap_arr_composite = fedot_gapfiller.composite_model(np.array(dataframe['with_gap']),
+                                                                max_window_size=1000)
     dataframe['composite'] = without_gap_arr_composite
 
     # Display metrics

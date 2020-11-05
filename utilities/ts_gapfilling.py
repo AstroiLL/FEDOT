@@ -182,12 +182,65 @@ class ModelGapFiller(SimpleGapFiller):
 
     def inverse_ridge(self, input_data, max_window_size: int = 50):
         """
-        Method fills in the gaps in the input array
+        Method fills in the gaps in the input array using ridge regression
 
         :param input_data: data with gaps to filling in the gaps in it
         :param max_window_size: window length
         :return: array without gaps
         """
+
+        def forward(timeseries_data, batch_index, new_gap_list):
+            """
+            The time series method makes a forward forecast based on the part
+            of the time series that is located to the left of the gap.
+
+            :param timeseries_data: one-dimensional array of a time series
+            :param batch_index: index of the interval (batch) with a gap
+            :param new_gap_list: array with nested lists of gap indexes
+
+            :return weights_list: numpy array with prediction weights for
+            averaging
+            :return predicted_values: numpy array with predicted values in the
+            gap
+            """
+
+            gap = new_gap_list[batch_index]
+            timeseries_train_part = timeseries_data[:gap[0]]
+
+            # Adaptive prediction interval length
+            len_gap = len(gap)
+            chain = TsForecastingChain(PrimaryNode('ridge'))
+
+            predicted_values = self._chain_fit_predict(chain,
+                                                       timeseries_train_part,
+                                                       len_gap,
+                                                       max_window_size)
+            weights_list = np.arange(len_gap, 0, -1)
+            return weights_list, predicted_values
+
+        def inverse(timeseries_data, batch_index, new_gap_list):
+            gap = new_gap_list[batch_index]
+
+            # If the interval with a gap is the last one in the array
+            if batch_index == len(new_gap_list) - 1:
+                timeseries_train_part = timeseries_data[(gap[-1] + 1):]
+            else:
+                next_gap = new_gap_list[batch_index + 1]
+                timeseries_train_part = timeseries_data[(gap[-1] + 1):next_gap[0]]
+            timeseries_train_part = np.flip(timeseries_train_part)
+
+            # Adaptive prediction interval length
+            len_gap = len(gap)
+            chain = TsForecastingChain(PrimaryNode('ridge'))
+
+            predicted_values = self._chain_fit_predict(chain,
+                                                       timeseries_train_part,
+                                                       len_gap,
+                                                       max_window_size)
+
+            predicted_values = np.flip(predicted_values)
+            weights_list = np.arange(1, (len_gap + 1), 1)
+            return weights_list,predicted_values
 
         output_data = np.array(input_data)
 
@@ -196,51 +249,36 @@ class ModelGapFiller(SimpleGapFiller):
         new_gap_list = self._parse_gap_ids(gap_list)
 
         # Iterately fill in the gaps in the time series
-        for index, gap in enumerate(new_gap_list):
+        for batch_index in range(len(new_gap_list)):
 
             preds = []
             weights = []
             # Two predictions are generated for each gap - forward and backward
-            for prediction in ['direct', 'inverse']:
+            for direction_function in [forward, inverse]:
 
-                # The entire time series is used for training until the gap
-                if prediction == 'direct':
-                    timeseries_train_part = output_data[:gap[0]]
-                elif prediction == 'inverse':
-                    if index == len(new_gap_list) - 1:
-                        timeseries_train_part = output_data[(gap[-1] + 1):]
-                    else:
-                        next_gap = new_gap_list[index + 1]
-                        timeseries_train_part = output_data[(gap[-1] + 1):next_gap[0]]
-                    timeseries_train_part = np.flip(timeseries_train_part)
-
-                # Adaptive prediction interval length
-                len_gap = len(gap)
-                chain = TsForecastingChain(PrimaryNode('ridge'))
-
-                predicted_values = self._chain_fit_predict(chain,
-                                                           timeseries_train_part,
-                                                           len_gap,
-                                                           max_window_size)
-
-                if prediction == 'direct':
-                    weights.append(np.arange(len_gap, 0, -1))
-                    preds.append(predicted_values)
-                elif prediction == 'inverse':
-                    predicted_values = np.flip(predicted_values)
-                    weights.append(np.arange(1, (len_gap + 1), 1))
-                    preds.append(predicted_values)
+                weights_list, predicted_list = direction_function(output_data, batch_index, new_gap_list)
+                weights.append(weights_list)
+                preds.append(predicted_list)
 
             preds = np.array(preds)
             weights = np.array(weights)
             result = np.average(preds, axis=0, weights=weights)
 
+            gap = new_gap_list[batch_index]
             # Replace gaps in an array with predicted values
             output_data[gap] = result
 
         return output_data
 
-    def composite_fill_gaps(self, input_data, max_window_size: int = 50):
+    def composite_model(self, input_data, max_window_size: int = 50):
+        """
+        Method fills in the gaps in the input array using chain with several
+        models
+
+        :param input_data: data with gaps to filling in the gaps in it
+        :param max_window_size: window length
+        :return: array without gaps
+        """
 
         output_data = np.array(input_data)
 
@@ -323,4 +361,3 @@ class ModelGapFiller(SimpleGapFiller):
         predicted_values = chain.forecast(initial_data=input_data,
                                           supplementary_data=test_data).predict
         return predicted_values
-
