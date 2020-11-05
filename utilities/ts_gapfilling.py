@@ -270,7 +270,9 @@ class ModelGapFiller(SimpleGapFiller):
             # Two predictions are generated for each gap - forward and backward
             for direction_function in [forward, inverse]:
 
-                weights_list, predicted_list = direction_function(output_data, batch_index, new_gap_list)
+                weights_list, predicted_list = direction_function(output_data,
+                                                                  batch_index,
+                                                                  new_gap_list)
                 weights.append(weights_list)
                 preds.append(predicted_list)
 
