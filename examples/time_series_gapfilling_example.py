@@ -41,9 +41,12 @@ if __name__ == '__main__':
     simple_gapfill = SimpleGapFiller(gap_value=-100.0)
     without_gap_arr_poly = simple_gapfill.local_poly_approximation(tmp_data, 4, 150)
 
-    plt.plot(without_gap_arr, c='blue', alpha=0.5, label = 'Actual values')
+    masked_array = np.ma.masked_where(tmp_data == -100.0, tmp_data)
     plt.plot(without_gap_arr_poly, c='orange',
-             alpha=0.4, label = 'Polynomial approximation')
+             alpha=0.5, label = 'Polynomial approximation')
+    plt.plot(without_gap_arr, c='red',
+             alpha=0.5, label='Inverse ridge')
+    plt.plot(masked_array, c='blue', alpha=1.0, label='Actual values')
     plt.legend()
     plt.grid()
     plt.show()
