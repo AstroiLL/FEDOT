@@ -6,7 +6,7 @@ import numpy as np
 from utilities.ts_gapfilling import SimpleGapFiller, ModelGapFiller
 
 
-def generate_synthetic_data(length: int = 2000, gap_size: int = 100,
+def generate_synthetic_data(length: int = 2500, gap_size: int = 100,
                             gap_value: float = -100.0):
     """
     The function generates a synthetic one-dimensional array with omissions
@@ -39,7 +39,8 @@ if __name__ == '__main__':
     without_gap_arr = gapfiller.inverse_ridge(tmp_data, max_window_size=400)
 
     simple_gapfill = SimpleGapFiller(gap_value=-100.0)
-    without_gap_arr_poly = simple_gapfill.local_poly_approximation(tmp_data, 4, 150)
+    without_gap_arr_poly = \
+        simple_gapfill.local_poly_approximation(tmp_data, 4, 150)
 
     masked_array = np.ma.masked_where(tmp_data == -100.0, tmp_data)
     plt.plot(without_gap_arr_poly, c='orange',

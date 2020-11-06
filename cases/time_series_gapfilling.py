@@ -27,7 +27,8 @@ def print_metrics(dataframe):
     composite_predicted = np.array(dataframe['composite'])[gap_ids]
 
     model_labels = ['Inverted ridge regression', 'Composite model']
-    for predicted, model_label in zip([ridge_predicted, composite_predicted], model_labels):
+    for predicted, model_label in zip(
+            [ridge_predicted, composite_predicted], model_labels):
         print(f"{model_label}")
 
         mae_metric = mean_absolute_error(actual, predicted)
@@ -51,12 +52,12 @@ def plot_result(dataframe):
     gap_array = np.array(dataframe['with_gap'])
     masked_array = np.ma.masked_where(gap_array == -100.0, gap_array)
 
-    plt.plot(dataframe['date'], dataframe['temperature'],
-             c='blue', alpha=0.5, label='Actual values', linewidth=1)
-    plt.plot(dataframe['date'], dataframe['ridge'],
-             c='orange', alpha=0.8, label='Inverse ridge gapfilling', linewidth=1)
-    plt.plot(dataframe['date'], dataframe['composite'],
-             c='red', alpha=0.8, label='Composite gapfilling', linewidth=1)
+    plt.plot(dataframe['date'], dataframe['temperature'], c='blue',
+             alpha=0.5, label='Actual values', linewidth=1)
+    plt.plot(dataframe['date'], dataframe['ridge'], c='orange',
+             alpha=0.8, label='Inverse ridge gapfilling', linewidth=1)
+    plt.plot(dataframe['date'], dataframe['composite'], c='red',
+             alpha=0.8, label='Composite gapfilling', linewidth=1)
     plt.plot(dataframe['date'], masked_array, c='blue')
     plt.grid()
     plt.legend()
@@ -75,13 +76,15 @@ if __name__ == '__main__':
 
     # Filling in gaps based on inverted ridge regression model
     fedot_gapfiller = ModelGapFiller(gap_value=-100.0)
-    without_gap_arr_ridge = fedot_gapfiller.inverse_ridge(np.array(dataframe['with_gap']),
-                                                          max_window_size=250)
+    without_gap_arr_ridge = \
+        fedot_gapfiller.inverse_ridge(np.array(dataframe['with_gap']),
+                                      max_window_size=250)
     dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
-    without_gap_arr_composite = fedot_gapfiller.composite_model(np.array(dataframe['with_gap']),
-                                                                max_window_size=1000)
+    without_gap_arr_composite = \
+        fedot_gapfiller.composite_model(np.array(dataframe['with_gap']),
+                                        max_window_size=1000)
     dataframe['composite'] = without_gap_arr_composite
 
     # Display metrics
