@@ -254,7 +254,7 @@ class ModelGapFiller(SimpleGapFiller):
 
             predicted_values = np.flip(predicted_values)
             weights_list = np.arange(1, (len_gap + 1), 1)
-            return weights_list,predicted_values
+            return weights_list, predicted_values
 
         output_data = np.array(input_data)
 
@@ -339,8 +339,8 @@ class ModelGapFiller(SimpleGapFiller):
         chain = TsForecastingChain(node_final)
         return chain
 
-    def _chain_fit_predict(self, chain, timeseries_train: np.array, len_gap: int,
-                            max_window_size: int):
+    def _chain_fit_predict(self, chain, timeseries_train: np.array,
+                           len_gap: int, max_window_size: int):
         """
         The method makes a prediction as a sequence of elements based on a
         training sample. There are two main parts: fit model and predict.

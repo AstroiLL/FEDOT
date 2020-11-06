@@ -3,8 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error,\
-    median_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, median_absolute_error
 
 from core.utils import project_root
 from utilities.ts_gapfilling import ModelGapFiller

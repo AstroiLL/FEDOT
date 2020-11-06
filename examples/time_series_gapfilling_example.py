@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     masked_array = np.ma.masked_where(tmp_data == -100.0, tmp_data)
     plt.plot(without_gap_arr_poly, c='orange',
-             alpha=0.5, label = 'Polynomial approximation')
+             alpha=0.5, label='Polynomial approximation')
     plt.plot(without_gap_arr, c='red',
              alpha=0.5, label='Inverse ridge')
     plt.plot(masked_array, c='blue', alpha=1.0, label='Actual values')
