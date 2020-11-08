@@ -75,16 +75,15 @@ if __name__ == '__main__':
 
     # Filling in gaps based on inverted ridge regression model
     fedot_gapfiller = ModelGapFiller(gap_value=-100.0)
-    without_gap_arr_ridge = \
-        fedot_gapfiller.inverse_ridge(np.array(dataframe['with_gap']),
-                                      max_window_size=250)
+    with_gap_array = np.array(dataframe['with_gap'])
+    without_gap_arr_ridge = fedot_gapfiller.inverse_ridge(with_gap_array,
+                                                          max_window_size=250)
     dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
-    without_gap_arr_composite = \
-        fedot_gapfiller.composite_model(np.array(dataframe['with_gap']),
-                                        max_window_size=1000)
-    dataframe['composite'] = without_gap_arr_composite
+    without_gap_composite = fedot_gapfiller.composite_model(with_gap_array,
+                                                            max_window_size=1000)
+    dataframe['composite'] = without_gap_composite
 
     # Display metrics
     print_metrics(dataframe)
