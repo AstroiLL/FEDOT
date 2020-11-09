@@ -15,7 +15,7 @@ DEFAULT_PARAMS_STUB = 'default_params'
 class Model:
     """
     Base object with fit/predict methods defining the evaluation strategy for the task
-    
+
     :param model_type: str type of the model defined in model repository
     :param log: Log object to record messages
     """
@@ -86,8 +86,8 @@ class Model:
     def predict(self, fitted_model, data: InputData):
         """
         This method is used for defining and running of the evaluation strategy
-
         to predict with the data provided
+
         :param fitted_model: trained model object
         :param data: data used for prediction
         """
