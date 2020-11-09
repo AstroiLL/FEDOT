@@ -355,7 +355,7 @@ class ModelGapFiller(SimpleGapFiller):
         task = Task(TaskTypesEnum.ts_forecasting,
                     TsForecastingParams(forecast_length=len_gap,
                                         max_window_size=max_window_size,
-                                        return_all_steps=True,
+                                        return_all_steps=False,
                                         make_future_prediction=True))
 
         input_data = InputData(idx=np.arange(0, len(timeseries_train)),
