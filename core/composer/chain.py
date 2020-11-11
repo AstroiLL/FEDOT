@@ -6,8 +6,9 @@ from uuid import uuid4
 import networkx as nx
 
 from core.composer.node import (FittedModelCache, Node, PrimaryNode, SecondaryNode, SharedCache)
-from core.log import default_log, Log
+from core.log import Log, default_log
 from core.models.data import InputData
+from core.repository.tasks import TaskTypesEnum
 from utilities.synthetic.chain_template_new import ChainTemplate
 
 ERROR_PREFIX = 'Invalid chain configuration:'
@@ -54,6 +55,11 @@ class Chain:
         """
         if not use_cache:
             self._clean_model_cache()
+
+        if input_data.task.task_type == TaskTypesEnum.ts_forecasting:
+            # the make_future_prediction is useless for the fit stage
+            input_data.task.task_params.make_future_prediction = False
+
         train_predicted = self.root_node.fit(input_data=input_data, verbose=verbose)
 
         return train_predicted
