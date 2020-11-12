@@ -6,6 +6,8 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, median_absolute_error
 
 from core.utils import project_root
+from core.composer.node import PrimaryNode, SecondaryNode
+from core.composer.ts_chain import TsForecastingChain
 from utilities.ts_gapfilling import ModelGapFiller
 
 
@@ -62,6 +64,22 @@ def plot_result(dataframe):
     plt.legend()
     plt.show()
 
+def get_composite_chain():
+    """
+    The method returns prepared chain of 5 models
+
+    :return: TsForecastingChain object
+    """
+
+    node_first = PrimaryNode('trend_data_model')
+    node_second = PrimaryNode('residual_data_model')
+    node_trend_model = SecondaryNode('linear', nodes_from=[node_first])
+    node_residual_model = SecondaryNode('linear', nodes_from=[node_second])
+
+    node_final = SecondaryNode('linear', nodes_from=[node_trend_model,
+                                                         node_residual_model])
+    chain = TsForecastingChain(node_final)
+    return chain
 
 # Example of using the algorithm to fill in gaps in a time series with a gap
 # of 1000 elements
@@ -74,15 +92,20 @@ if __name__ == '__main__':
     dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Filling in gaps based on inverted ridge regression model
-    fedot_gapfiller = ModelGapFiller(gap_value=-100.0)
+    ridge_chain = TsForecastingChain(PrimaryNode('ridge'))
+    ridge_gapfiller = ModelGapFiller(gap_value=-100.0,
+                                     chain=ridge_chain)
     with_gap_array = np.array(dataframe['with_gap'])
-    without_gap_arr_ridge = fedot_gapfiller.inverse_ridge(with_gap_array,
-                                                          max_window_size=250)
+    without_gap_arr_ridge = ridge_gapfiller.forward_inverse_filling(with_gap_array,
+                                                                    max_window_size=250)
     dataframe['ridge'] = without_gap_arr_ridge
 
     # Filling in gaps based on a chain of 5 models
-    without_gap_composite = fedot_gapfiller.composite_model(with_gap_array,
-                                                            max_window_size=1000)
+    composite_chain = get_composite_chain()
+    composite_gapfiller = ModelGapFiller(gap_value=-100.0,
+                                         chain=composite_chain)
+    without_gap_composite = composite_gapfiller.forward_filling(with_gap_array,
+                                                                max_window_size=1000)
     dataframe['composite'] = without_gap_composite
 
     # Display metrics

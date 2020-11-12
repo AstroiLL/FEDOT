@@ -178,11 +178,17 @@ class ModelGapFiller(SimpleGapFiller):
     Class used for filling in the gaps in time series
 
     :param gap_value: value, which mask gap elements in array
+    :param chain: TsForecastingChain object for filling in the gaps
     """
 
-    def inverse_ridge(self, input_data, max_window_size: int = 50):
+    def __init__(self, gap_value, chain):
+        super().__init__(gap_value)
+        self.chain = chain
+
+    def forward_inverse_filling(self, input_data, max_window_size: int = 50):
         """
-        Method fills in the gaps in the input array using ridge regression
+        Method fills in the gaps in the input array using forward and inverse
+        directions of predictions
 
         :param input_data: data with gaps to filling in the gaps in it
         :param max_window_size: window length
@@ -209,10 +215,7 @@ class ModelGapFiller(SimpleGapFiller):
 
             # Adaptive prediction interval length
             len_gap = len(gap)
-            chain = TsForecastingChain(PrimaryNode('ridge'))
-
-            predicted_values = self._chain_fit_predict(chain,
-                                                       timeseries_train_part,
+            predicted_values = self._chain_fit_predict(timeseries_train_part,
                                                        len_gap,
                                                        max_window_size)
             weights_list = np.arange(len_gap, 0, -1)
@@ -245,10 +248,8 @@ class ModelGapFiller(SimpleGapFiller):
 
             # Adaptive prediction interval length
             len_gap = len(gap)
-            chain = TsForecastingChain(PrimaryNode('ridge'))
 
-            predicted_values = self._chain_fit_predict(chain,
-                                                       timeseries_train_part,
+            predicted_values = self._chain_fit_predict(timeseries_train_part,
                                                        len_gap,
                                                        max_window_size)
 
@@ -286,10 +287,10 @@ class ModelGapFiller(SimpleGapFiller):
 
         return output_data
 
-    def composite_model(self, input_data, max_window_size: int = 50):
+    def forward_filling(self, input_data, max_window_size: int = 50):
         """
-        Method fills in the gaps in the input array using chain with several
-        models
+        Method fills in the gaps in the input array using chain with only
+        forward direction (i.e. time series forecasting)
 
         :param input_data: data with gaps to filling in the gaps in it
         :param max_window_size: window length
@@ -311,9 +312,7 @@ class ModelGapFiller(SimpleGapFiller):
             len_gap = len(gap)
 
             # Chain for the task of filling in gaps
-            chain = self._get_composite_chain()
-            predicted = self._chain_fit_predict(chain,
-                                                timeseries_train_part,
+            predicted = self._chain_fit_predict(timeseries_train_part,
                                                 len_gap,
                                                 max_window_size)
 
@@ -322,30 +321,12 @@ class ModelGapFiller(SimpleGapFiller):
             break
         return output_data
 
-    def _get_composite_chain(self):
-        """
-        The method returns prepared chain of 5 models
-
-        :return: TsForecastingChain object
-        """
-
-        node_first = PrimaryNode('trend_data_model')
-        node_second = PrimaryNode('residual_data_model')
-        node_trend_model = SecondaryNode('linear', nodes_from=[node_first])
-        node_residual_model = SecondaryNode('linear', nodes_from=[node_second])
-
-        node_final = SecondaryNode('linear', nodes_from=[node_trend_model,
-                                                         node_residual_model])
-        chain = TsForecastingChain(node_final)
-        return chain
-
-    def _chain_fit_predict(self, chain, timeseries_train: np.array,
+    def _chain_fit_predict(self, timeseries_train: np.array,
                            len_gap: int, max_window_size: int):
         """
         The method makes a prediction as a sequence of elements based on a
         training sample. There are two main parts: fit model and predict.
 
-        :param chain: TsForecastingChain object
         :param timeseries_train: part of the time series for training the model
         :param len_gap: number of elements in the gap
         :param max_window_size: window length
@@ -365,7 +346,7 @@ class ModelGapFiller(SimpleGapFiller):
                                data_type=DataTypesEnum.ts)
 
         # Making predictions for the missing part in the time series
-        chain.fit_from_scratch(input_data)
+        self.chain.fit_from_scratch(input_data)
 
         # "Test data" for making prediction for a specific length
         test_data = InputData(idx=np.arange(0, len_gap),
@@ -374,6 +355,6 @@ class ModelGapFiller(SimpleGapFiller):
                               task=task,
                               data_type=DataTypesEnum.ts)
 
-        predicted_values = chain.forecast(initial_data=input_data,
-                                          supplementary_data=test_data).predict
+        predicted_values = self.chain.forecast(initial_data=input_data,
+                                               supplementary_data=test_data).predict
         return predicted_values

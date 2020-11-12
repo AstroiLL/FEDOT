@@ -3,6 +3,8 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
+from core.composer.node import PrimaryNode
+from core.composer.ts_chain import TsForecastingChain
 from utilities.ts_gapfilling import SimpleGapFiller, ModelGapFiller
 
 
@@ -35,8 +37,10 @@ if __name__ == '__main__':
     tmp_data = generate_synthetic_data()
 
     # Filling in gaps
-    gapfiller = ModelGapFiller(gap_value=-100.0)
-    without_gap_arr = gapfiller.inverse_ridge(tmp_data, max_window_size=400)
+    ridge_chain = TsForecastingChain(PrimaryNode('ridge'))
+    ridge_gapfiller = ModelGapFiller(gap_value=-100.0,
+                                     chain=ridge_chain)
+    without_gap_arr = ridge_gapfiller.forward_inverse_filling(tmp_data, 400)
 
     simple_gapfill = SimpleGapFiller(gap_value=-100.0)
     without_gap_arr_poly = \

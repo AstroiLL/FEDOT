@@ -2,6 +2,8 @@ import random
 import pytest
 
 import numpy as np
+from core.composer.node import PrimaryNode
+from core.composer.ts_chain import TsForecastingChain
 from utilities.ts_gapfilling import ModelGapFiller
 from sklearn.metrics import mean_squared_error
 
@@ -27,10 +29,10 @@ def test_gapfilling_inverse_ridge_correct():
 
     # Find all gap indices in the array
     id_gaps = np.argwhere(arr_with_gaps == -100.0)
-    standard_deviation = np.std(real_values)
 
-    gapfiller = ModelGapFiller(gap_value=-100.0)
-    without_gap = gapfiller.inverse_ridge(arr_with_gaps, max_window_size=100)
+    ridge_chain = TsForecastingChain(PrimaryNode('ridge'))
+    gapfiller = ModelGapFiller(gap_value=-100.0, chain=ridge_chain)
+    without_gap = gapfiller.forward_inverse_filling(arr_with_gaps, 100)
     predicted_values = without_gap[id_gaps]
 
     rmse_test = (mean_squared_error(real_values, predicted_values)) ** 0.5
