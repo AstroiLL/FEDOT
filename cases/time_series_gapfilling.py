@@ -64,6 +64,7 @@ def plot_result(dataframe):
     plt.legend()
     plt.show()
 
+
 def get_composite_chain():
     """
     The method returns prepared chain of 5 models
@@ -77,9 +78,10 @@ def get_composite_chain():
     node_residual_model = SecondaryNode('linear', nodes_from=[node_second])
 
     node_final = SecondaryNode('linear', nodes_from=[node_trend_model,
-                                                         node_residual_model])
+                                                     node_residual_model])
     chain = TsForecastingChain(node_final)
     return chain
+
 
 # Example of using the algorithm to fill in gaps in a time series with a gap
 # of 1000 elements
