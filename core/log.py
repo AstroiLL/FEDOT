@@ -107,7 +107,6 @@ class Log:
     def __setstate__(self, state):
         """
         Restore an unpickled dict state and assign state items
-
         to the new instance’s dictionary.
 
         :param state: pickled class attributes
