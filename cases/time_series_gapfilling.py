@@ -83,10 +83,15 @@ def get_composite_chain():
     return chain
 
 
-# Example of using the algorithm to fill in gaps in a time series with a gap
-# of 1000 elements
-# The data is daily air temperature values from the weather station
-if __name__ == '__main__':
+def run_gapfilling_case():
+    """
+    The function runs an example of filling in gaps in a time series with
+    air temperature
+
+    :return: pandas dataframe with columns 'date','with_gap','ridge',
+    'composite','temperature'
+    """
+
     # Load dataframe
     file_path = 'cases/data/gapfilling/TS_temperature_gapfilling.csv'
     full_path = os.path.join(str(project_root()), file_path)
@@ -109,6 +114,13 @@ if __name__ == '__main__':
     without_gap_composite = composite_gapfiller.forward_filling(with_gap_array,
                                                                 max_window_size=1000)
     dataframe['composite'] = without_gap_composite
+    return dataframe
+
+
+# Example of using the algorithm to fill in gaps in a time series
+# The data is daily air temperature values from the weather station
+if __name__ == '__main__':
+    dataframe = run_gapfilling_case()
 
     # Display metrics
     print_metrics(dataframe)
