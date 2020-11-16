@@ -304,7 +304,7 @@ class ModelGapFiller(SimpleGapFiller):
         new_gap_list = self._parse_gap_ids(gap_list)
 
         # Iterately fill in the gaps in the time series
-        for index, gap in enumerate(new_gap_list):
+        for gap in new_gap_list:
             # The entire time series is used for training until the gap
             timeseries_train_part = output_data[:gap[0]]
 
@@ -318,7 +318,6 @@ class ModelGapFiller(SimpleGapFiller):
 
             # Replace gaps in an array with predicted values
             output_data[gap] = predicted
-            break
         return output_data
 
     def _chain_fit_predict(self, timeseries_train: np.array,
