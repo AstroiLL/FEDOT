@@ -3,7 +3,6 @@ import random
 from datetime import timedelta
 
 import numpy as np
-import pandas as pd
 
 from cases.credit_scoring_problem import run_credit_scoring_problem
 from cases.metocean_forecasting_problem import run_metocean_forecasting_problem
