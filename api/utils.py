@@ -12,10 +12,10 @@ from core.repository.quality_metrics_repository import ClassificationMetricsEnum
 from core.repository.tasks import Task, TaskTypesEnum
 
 
-def run_ml_problem(train_file_path,
-                   task,
-                   learning_time: int,
-                   is_visualise=False):
+def compose_fedot_model(train_file_path: str,
+                        task: Task,
+                        learning_time: int,
+                        is_visualise=False):
     # the choice of the metric for the chain quality assessment during composition
     if task == Task(TaskTypesEnum.classification):
         metric_function = MetricsRepository().metric_by_id(ClassificationMetricsEnum.ROCAUC_penalty)
@@ -24,7 +24,6 @@ def run_ml_problem(train_file_path,
     learning_time = datetime.timedelta(minutes=learning_time)
 
     dataset_to_compose = InputData.from_csv(train_file_path, task=task)
-    # dataset_to_validate = InputData.from_csv(test_file_path, task=task)
 
     # the search of the models provided by the framework that can be used as nodes in a chain for the selected task
     available_model_types, _ = ModelTypesRepository().suitable_model(task_type=task.task_type)
@@ -46,9 +45,6 @@ def run_ml_problem(train_file_path,
                                                 metrics=metric_function,
                                                 is_visualise=False)
 
-    # chain_evo_composed.fine_tune_primary_nodes(input_data=dataset_to_compose,
-    #                                            iterations=50)
-
     chain_evo_composed.fit(input_data=dataset_to_compose, verbose=True)
 
     if is_visualise:
@@ -57,12 +53,12 @@ def run_ml_problem(train_file_path,
     return chain_evo_composed
 
 
-def load_model(fitted_model_path: str):
-    with open(fitted_model_path, 'r') as json_file:
+def load_model(fedot_model_path: str):
+    with open(fedot_model_path, 'r') as json_file:
         fitted_model = json.load(json_file)
     return fitted_model
 
 
 def save_predict(predicted_data: OutputData):
     return pd.DataFrame({'Index': predicted_data.idx,
-                        'Prediction': predicted_data.predict}).to_csv(r'./api_dataset/predictions.csv', index=False)
+                         'Prediction': predicted_data.predict}).to_csv(r'./predictions.csv', index=False)
