@@ -1,4 +1,4 @@
-from api.run_api import fedot_runner
+from api.run_api import Fedot
 import pandas as pd
 import os
 import numpy as np
@@ -25,18 +25,18 @@ def get_api_data_paths():
 def get_regression_data():
     train_full, test = get_api_data_paths()
     train_file = pd.read_csv(train_full)
-    X, y = train_file.loc[:, ~train_file.columns.isin(['target'])].values, train_file['target'].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=24)
-    return X_train, X_test, y_train, y_test
+    x, y = train_file.loc[:, ~train_file.columns.isin(['target'])].values, train_file['target'].values
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=24)
+    return x_train, x_test, y_train, y_test
 
 
 def test_api_baseline():
-    X_train, X_test, y_train, y_test = get_regression_data()
-    model_baseline = fedot_runner(ml_task=task_type)
+    x_train, x_test, y_train, y_test = get_regression_data()
+    model_baseline = Fedot(ml_task=task_type)
 
-    model_baseline.fit(features=X_train,
+    model_baseline.fit(features=x_train,
                        target=y_train)
-    model_baseline.predict(features=X_test,
+    model_baseline.predict(features=x_test,
                            target=y_test)
 
     metric_baseline = model_baseline.quality_metric()
@@ -47,11 +47,11 @@ def test_api_baseline():
 
 def test_api_advanced():
     train, test = get_api_data_paths()
-    model_advanced = fedot_runner(ml_task=task_type,
-                                  composer_params=composer_params)
+    model_advanced = Fedot(ml_task=task_type,
+                           composer_params=composer_params)
 
-    model_advanced.fit(csv_path=train)
-    model_advanced.predict(csv_path=test)
+    model_advanced.fit(features=train)
+    model_advanced.predict(features=test)
 
     metric_advanced = model_advanced.quality_metric()
     threshold = np.std(pd.read_csv(test)['target'].values)

@@ -2,7 +2,6 @@ import numpy as np
 from api.utils import compose_fedot_model, save_predict, array_to_input_data
 from fedot.core.models.data import InputData
 from fedot.core.repository.tasks import Task, TaskTypesEnum
-from fedot.core.composer.chain import Chain
 from fedot.core.composer.metrics import F1Metric, MaeMetric, RmseMetric, RocAucMetric
 
 
@@ -11,46 +10,35 @@ def default_evo_params():
             'max_arity': 3,
             'pop_size': 20,
             'num_of_generations': 20,
-            'learning_time': 5}
-
-
-def fedot_runner(ml_task: str,
-                 composer_params: dict = None,
-                 fedot_model_path: str = './fedot_model.json',
-                 metric_name: str = 'RMSE'):
-    fedot_model = Fedot(ml_task=ml_task,
-                        composer_params=default_evo_params(),
-                        fedot_model_path=fedot_model_path,
-                        metric_name=metric_name)
-    if composer_params is not None:
-        fedot_model = Fedot(ml_task=ml_task,
-                            composer_params=composer_params,
-                            fedot_model_path=fedot_model_path,
-                            metric_name=metric_name)
-
-    return fedot_model
+            'learning_time': 2}
 
 
 class Fedot(object):
 
     def __init__(self,
                  ml_task: str,
-                 composer_params: dict,
-                 fedot_model_path: str,
-                 metric_name: str,
-                 current_model: Chain = None):
+                 composer_params: dict = None,
+                 fedot_model_path: str = './fedot_model.json'):
         self.ml_task = ml_task
-        self.composer_params = composer_params
         self.fedot_model_path = fedot_model_path
-        self.metric_name = metric_name
-        self.current_model = current_model
+        self.composer_params = composer_params
+
+        if self.composer_params is None:
+            self.composer_params = default_evo_params()
+
         task_dict = {'reg': Task(TaskTypesEnum.regression),
                      'clf': Task(TaskTypesEnum.classification),
-                     'cluster': Task(TaskTypesEnum.clustering)
+                     'cluster': Task(TaskTypesEnum.clustering),
+                     'time_series': Task(TaskTypesEnum.ts_forecasting)
                      }
         basic_metric_dict = {'reg': 'RMSE',
                              'clf': 'ROCAUC',
+                             'cluster': 'Silhouette',
+                             'time_series': 'RMSE'
                              }
+
+        if self.ml_task == 'cluster' or self.ml_task == 'time_series':
+            print('This type of task is not not supported in API now')
 
         self.metric_name = basic_metric_dict[self.ml_task]
         self.ml_task = task_dict[self.ml_task]
@@ -67,37 +55,39 @@ class Fedot(object):
         return self.current_model
 
     def fit(self,
-            features: np.array = None,
-            target: np.array = None,
-            csv_path: str = None):
-        if csv_path is None:
+            features,
+            target='target'):
+        if type(features) == np.ndarray:
             self.train_data = array_to_input_data(features_array=features,
                                                   target_array=target,
                                                   task_type=self.ml_task)
+        elif type(features) == str:
+            self.train_data = InputData.from_csv(features, task=self.ml_task, target_column=target)
         else:
-            self.train_data = InputData.from_csv(csv_path, task=self.ml_task)
+            print('Please specify a features as path to csv file or as Numpy array')
         return self._get_model()
 
     def predict(self,
-                features: np.array = None,
-                target: np.array = None,
-                csv_path: str = None,
-                save_model: bool = False):
+                features,
+                target='target'):
         if self.current_model is None:
             self.current_model = self._get_model()
 
-        if csv_path is None:
+        if type(features) == np.ndarray:
             self.test_data = array_to_input_data(features_array=features,
                                                  target_array=target,
                                                  task_type=self.ml_task)
+        elif type(features) == str:
+            self.test_data = InputData.from_csv(features, task=self.ml_task, target_column=target)
         else:
-            self.test_data = InputData.from_csv(csv_path, task=self.ml_task)
+            print('Please specify a features as path to csv file or as Numpy array')
 
         self.predicted = self.current_model.predict(self.test_data)
         save_predict(self.predicted)
-        if save_model:
-            self.current_model.save_chain(self.fedot_model_path)
         return self.predicted.predict
+
+    def save_model(self):
+        return self.current_model.save_chain(self.fedot_model_path)
 
     def quality_metric(self, metric_name: str = None):
         if metric_name is None:
