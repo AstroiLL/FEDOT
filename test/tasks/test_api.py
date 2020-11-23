@@ -1,10 +1,10 @@
 from api.run_api import fedot_runner
 import pandas as pd
 import os
+import numpy as np
 from fedot.core.utils import project_root
 from sklearn.model_selection import train_test_split
 
-train_full = r'C:\Users\user\Desktop\FEDOT\cases\data\oil_chemistry\train.csv'
 task_type = 'reg'
 composer_params = {'max_depth': 2,
                    'max_arity': 2,
@@ -23,6 +23,7 @@ def get_api_data_paths():
 
 
 def get_regression_data():
+    train_full, test = get_api_data_paths()
     train_file = pd.read_csv(train_full)
     X, y = train_file.loc[:, ~train_file.columns.isin(['target'])].values, train_file['target'].values
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=24)
@@ -32,21 +33,27 @@ def get_regression_data():
 def test_api_baseline():
     X_train, X_test, y_train, y_test = get_regression_data()
     model_baseline = fedot_runner(ml_task=task_type)
+
     model_baseline.fit(features=X_train,
                        target=y_train)
-    prediction_baseline = model_baseline.predict(features=X_test,
-                                                 target=y_test)
+    model_baseline.predict(features=X_test,
+                           target=y_test)
+
     metric_baseline = model_baseline.quality_metric()
-    assert metric_baseline < 0, prediction_baseline.shape == 0
+    threshold = np.std(y_test)
+
+    assert metric_baseline < threshold
 
 
 def test_api_advanced():
     train, test = get_api_data_paths()
     model_advanced = fedot_runner(ml_task=task_type,
                                   composer_params=composer_params)
+
     model_advanced.fit(csv_path=train)
-    prediction_advanced = model_advanced.predict(csv_path=test)
+    model_advanced.predict(csv_path=test)
+
     metric_advanced = model_advanced.quality_metric()
+    threshold = np.std(pd.read_csv(test)['target'].values)
 
-    assert metric_advanced < 0, prediction_advanced.shape == 0
-
+    assert metric_advanced < threshold

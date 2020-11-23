@@ -5,7 +5,6 @@ from fedot.core.utils import project_root
 from sklearn.model_selection import train_test_split
 
 if __name__ == '__main__':
-    train_file = r'C:\Users\user\Desktop\FEDOT\cases\data\oil_chemistry\train.csv'
     task_type = 'reg'
     file_path_train = 'cases/data/oil_chemistry/train.csv'
     file_path_test = 'cases/data/oil_chemistry/test_1.csv'
