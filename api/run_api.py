@@ -1,63 +1,114 @@
-from dataclasses import dataclass
-from sklearn.metrics import roc_auc_score as roc_auc
-from sklearn.metrics import mean_squared_error as mse
-from api.utils import compose_fedot_model, load_model, save_predict
+import numpy as np
+from api.utils import compose_fedot_model, load_model, save_predict, array_to_input_data
 from core.models.data import InputData
 from core.repository.tasks import Task, TaskTypesEnum
 from core.composer.chain import Chain
+from core.composer.metrics import F1Metric, MaeMetric, RmseMetric, RocAucMetric
 
 
-@dataclass
-class FedotModel:
-    train_file_path: str
-    ml_task: str
-    learning_time: int = 10
-    fedot_model_path: str = './fedot_model.json'
-    fit_flag: bool = False
-    current_model: Chain = None
+def default_evo_params():
+    return {'max_depth': 3,
+            'max_arity': 3,
+            'pop_size': 20,
+            'num_of_generations': 20,
+            'learning_time': 5}
 
-    def _get_params(self):
+
+def fedot_runner(ml_task: str,
+                 composer_params: dict = None,
+                 fedot_model_path: str = './fedot_model.json',
+                 metric_name: str = 'RMSE'):
+    fedot_model = Fedot(ml_task=ml_task,
+                        composer_params=default_evo_params(),
+                        fedot_model_path=fedot_model_path,
+                        metric_name=metric_name)
+    if composer_params is not None:
+        fedot_model = Fedot(ml_task=ml_task,
+                            composer_params=composer_params,
+                            fedot_model_path=fedot_model_path,
+                            metric_name=metric_name)
+
+    return fedot_model
+
+
+class Fedot(object):
+
+    def __init__(self,
+                 ml_task: str,
+                 composer_params: dict,
+                 fedot_model_path: str,
+                 metric_name: str,
+                 current_model: Chain = None):
+        self.ml_task = ml_task
+        self.composer_params = composer_params
+        self.fedot_model_path = fedot_model_path
+        self.metric_name = metric_name
+        self.current_model = current_model
         task_dict = {'reg': Task(TaskTypesEnum.regression),
                      'clf': Task(TaskTypesEnum.classification),
+                     'cluster': Task(TaskTypesEnum.clustering)
                      }
+        basic_metric_dict = {'reg': 'RMSE',
+                             'clf': 'ROCAUC',
+                             }
+
+        self.metric_name = basic_metric_dict[self.ml_task]
         self.ml_task = task_dict[self.ml_task]
-        param_dict = {'train_file_path': self.train_file_path,
+
+    def _get_params(self):
+        param_dict = {'train_data': self.train_data,
                       'task': self.ml_task,
-                      'learning_time': self.learning_time,
                       }
-        return param_dict
+        return {**param_dict, **self.composer_params}
 
     def _get_model(self):
         execution_params = self._get_params()
-        if self.fit_flag:
-            self.current_model = compose_fedot_model(**execution_params)
-        else:
-            self.current_model = load_model(self.fedot_model_path)
+        self.current_model = compose_fedot_model(**execution_params)
         return self.current_model
 
-    def fit(self):
-        self.fit_flag = True
+    def fit(self,
+            features: np.array = None,
+            target: np.array = None,
+            csv_path: str = None):
+        if csv_path is None:
+            self.train_data = array_to_input_data(features_array=features,
+                                                  target_array=target,
+                                                  task_type=self.ml_task)
+        else:
+            self.train_data = InputData.from_csv(csv_path, task=self.ml_task)
         return self._get_model()
 
-    def predict(self, test_file: str, save_model_flag: bool = False):
+    def predict(self,
+                features: np.array = None,
+                target: np.array = None,
+                csv_path: str = None,
+                save_model: bool = False):
         if self.current_model is None:
             self.current_model = self._get_model()
 
-        self.test_file_path = test_file
-        self.test_data = InputData.from_csv(self.test_file_path, task=self.ml_task)
+        if csv_path is None:
+            self.test_data = array_to_input_data(features_array=features,
+                                                 target_array=target,
+                                                 task_type=self.ml_task)
+        else:
+            self.test_data = InputData.from_csv(csv_path, task=self.ml_task)
+
         self.predicted = self.current_model.predict(self.test_data)
         save_predict(self.predicted)
-        if save_model_flag:
+        if save_model:
             self.current_model.save_chain(self.fedot_model_path)
         return self.predicted.predict
 
-    def quality_metric(self):
-        if self.ml_task == Task(TaskTypesEnum.regression):
-            metric_value = mse(y_true=self.test_data.target, y_pred=self.predicted.predict, squared=False)
-        elif self.ml_task == Task(TaskTypesEnum.classification):
-            metric_value = round(roc_auc(y_true=self.test_data.target,
-                                         y_score=self.predicted.predict), 3)
-        else:
-            print('Current version doesnt support your type of ML task')
-            metric_value = 0
+    def quality_metric(self, metric_name: str = None):
+        if metric_name is None:
+            metric_name = self.metric_name
+
+        __metric_dict = {'RMSE': RmseMetric.metric,
+                         'MAE': MaeMetric.metric,
+                         'ROCAUC': RocAucMetric.metric,
+                         'F1': F1Metric.metric,
+                         }
+
+        metric_value = round(__metric_dict[metric_name](reference=self.test_data,
+                                                        predicted=self.predicted), 3)
         return metric_value
