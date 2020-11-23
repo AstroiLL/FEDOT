@@ -2,15 +2,15 @@ import datetime
 import json
 import pandas as pd
 import numpy as np
-from core.composer.gp_composer.gp_composer import GPComposer, GPComposerRequirements
-from core.models.data import InputData, OutputData
-from core.repository.dataset_types import DataTypesEnum
-from core.repository.model_types_repository import (
+from fedot.core.composer.gp_composer.gp_composer import GPComposer, GPComposerRequirements
+from fedot.core.models.data import InputData, OutputData
+from fedot.core.repository.dataset_types import DataTypesEnum
+from fedot.core.repository.model_types_repository import (
     ModelTypesRepository
 )
-from core.repository.quality_metrics_repository import ClassificationMetricsEnum, RegressionMetricsEnum, \
+from fedot.core.repository.quality_metrics_repository import ClassificationMetricsEnum, RegressionMetricsEnum, \
     MetricsRepository
-from core.repository.tasks import Task, TaskTypesEnum
+from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 
 def load_model(fedot_model_path: str):

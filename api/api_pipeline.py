@@ -1,7 +1,7 @@
 from api.run_api import fedot_runner
 import pandas as pd
 import os
-from core.utils import project_root
+from fedot.core.utils import project_root
 from sklearn.model_selection import train_test_split
 
 if __name__ == '__main__':

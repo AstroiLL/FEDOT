@@ -1,9 +1,9 @@
 import numpy as np
-from api.utils import compose_fedot_model, load_model, save_predict, array_to_input_data
-from core.models.data import InputData
-from core.repository.tasks import Task, TaskTypesEnum
-from core.composer.chain import Chain
-from core.composer.metrics import F1Metric, MaeMetric, RmseMetric, RocAucMetric
+from api.utils import compose_fedot_model, save_predict, array_to_input_data
+from fedot.core.models.data import InputData
+from fedot.core.repository.tasks import Task, TaskTypesEnum
+from fedot.core.composer.chain import Chain
+from fedot.core.composer.metrics import F1Metric, MaeMetric, RmseMetric, RocAucMetric
 
 
 def default_evo_params():
