@@ -53,3 +53,7 @@ def test_api_advanced():
     threshold = np.std(pd.read_csv(test)['target'].values)
 
     assert metric_advanced < threshold
+
+
+test_api_baseline()
+test_api_advanced()

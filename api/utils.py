@@ -2,7 +2,7 @@ import datetime
 import json
 import pandas as pd
 import numpy as np
-from fedot.core.composer.gp_composer.gp_composer import GPComposer, GPComposerRequirements
+from fedot.core.composer.gp_composer.gp_composer import GPComposerBuilder, GPComposerRequirements
 from fedot.core.models.data import InputData, OutputData
 from fedot.core.repository.dataset_types import DataTypesEnum
 from fedot.core.repository.model_types_repository import (
@@ -59,15 +59,11 @@ def compose_fedot_model(train_data: InputData,
         crossover_prob=0.8, mutation_prob=0.8, max_lead_time=learning_time)
 
     # Create GP-based composer
-    composer = GPComposer()
+    builder = GPComposerBuilder(task).with_requirements(composer_requirements).with_metrics(metric_function)
+    gp_composer = builder.build()
 
-    # the optimal chain generation by composition - the most time-consuming task
-    chain_evo_composed = composer.compose_chain(data=train_data,
-                                                initial_chain=None,
-                                                composer_requirements=composer_requirements,
-                                                metrics=metric_function,
-                                                is_visualise=False)
+    chain_gp_composed = gp_composer.compose_chain(data=train_data)
 
-    chain_evo_composed.fit(input_data=train_data, verbose=True)
+    chain_gp_composed.fit_from_scratch(input_data=train_data)
 
-    return chain_evo_composed
+    return chain_gp_composed
