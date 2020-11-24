@@ -6,11 +6,8 @@ from fedot.core.utils import project_root
 from sklearn.model_selection import train_test_split
 
 task_type = 'reg'
-composer_params = {'max_depth': 2,
-                   'max_arity': 2,
-                   'pop_size': 10,
-                   'num_of_generations': 10,
-                   'learning_time': 3}
+composer_params = {'max_depth': 3,
+                   'learning_time': 1}
 
 
 def get_api_data_paths():
@@ -36,10 +33,9 @@ def test_api_baseline():
 
     model_baseline.fit(features=x_train,
                        target=y_train)
-    model_baseline.predict(features=x_test,
-                           target=y_test)
+    model_baseline.predict(features=x_test)
 
-    metric_baseline = model_baseline.quality_metric()
+    metric_baseline = model_baseline.quality_metric(target=y_test)
     threshold = np.std(y_test)
 
     assert metric_baseline < threshold

@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 from api.utils import compose_fedot_model, save_predict, array_to_input_data
 from fedot.core.models.data import InputData
@@ -5,12 +6,36 @@ from fedot.core.repository.tasks import Task, TaskTypesEnum
 from fedot.core.composer.metrics import F1Metric, MaeMetric, RmseMetric, RocAucMetric
 
 
-def default_evo_params():
-    return {'max_depth': 3,
-            'max_arity': 3,
-            'pop_size': 20,
-            'num_of_generations': 20,
-            'learning_time': 2}
+def default_evo_params(max_depth: int = 3,
+                       max_arity: int = 3,
+                       pop_size: int = 20,
+                       num_of_generations: int = 20,
+                       learning_time: int = 2):
+    return {'max_depth': max_depth,
+            'max_arity': max_arity,
+            'pop_size': pop_size,
+            'num_of_generations': num_of_generations,
+            'learning_time': learning_time}
+
+
+def check_data_type(ml_task: Task,
+                    features: Union[str, np.ndarray],
+                    target: Union[str, np.ndarray] = None):
+    if type(features) == np.ndarray:
+        if target is None:
+            target = np.array([])
+
+        data = array_to_input_data(features_array=features,
+                                   target_array=target,
+                                   task_type=ml_task)
+    elif type(features) == str:
+        if target is None:
+            target = 'target'
+
+        data = InputData.from_csv(features, task=ml_task, target_column=target)
+    else:
+        print('Please specify a features as path to csv file or as Numpy array')
+    return data
 
 
 class Fedot(object):
@@ -25,6 +50,8 @@ class Fedot(object):
 
         if self.composer_params is None:
             self.composer_params = default_evo_params()
+        else:
+            self.composer_params = {**default_evo_params(), **self.composer_params}
 
         task_dict = {'reg': Task(TaskTypesEnum.regression),
                      'clf': Task(TaskTypesEnum.classification),
@@ -55,32 +82,20 @@ class Fedot(object):
         return self.current_model
 
     def fit(self,
-            features,
-            target='target'):
-        if type(features) == np.ndarray:
-            self.train_data = array_to_input_data(features_array=features,
-                                                  target_array=target,
-                                                  task_type=self.ml_task)
-        elif type(features) == str:
-            self.train_data = InputData.from_csv(features, task=self.ml_task, target_column=target)
-        else:
-            print('Please specify a features as path to csv file or as Numpy array')
+            features: Union[str, np.ndarray],
+            target: Union[str, np.ndarray] = 'target'):
+        self.train_data = check_data_type(ml_task=self.ml_task,
+                                          features=features,
+                                          target=target)
         return self._get_model()
 
     def predict(self,
-                features,
-                target='target'):
+                features: Union[str, np.ndarray]):
         if self.current_model is None:
             self.current_model = self._get_model()
 
-        if type(features) == np.ndarray:
-            self.test_data = array_to_input_data(features_array=features,
-                                                 target_array=target,
-                                                 task_type=self.ml_task)
-        elif type(features) == str:
-            self.test_data = InputData.from_csv(features, task=self.ml_task, target_column=target)
-        else:
-            print('Please specify a features as path to csv file or as Numpy array')
+        self.test_data = check_data_type(ml_task=self.ml_task,
+                                         features=features)
 
         self.predicted = self.current_model.predict(self.test_data)
         save_predict(self.predicted)
@@ -89,9 +104,14 @@ class Fedot(object):
     def save_model(self):
         return self.current_model.save_chain(self.fedot_model_path)
 
-    def quality_metric(self, metric_name: str = None):
+    def quality_metric(self,
+                       target: np.ndarray = None,
+                       metric_name: str = None):
         if metric_name is None:
             metric_name = self.metric_name
+
+        if target is not None:
+            self.test_data.target = target
 
         __metric_dict = {'RMSE': RmseMetric.metric,
                          'MAE': MaeMetric.metric,
