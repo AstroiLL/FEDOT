@@ -2,26 +2,25 @@ import numpy as np
 from sklearn.datasets import make_regression
 from sklearn.metrics import mean_squared_error as mse
 
-from core.composer.chain import Chain
-from core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
-from core.composer.node import PrimaryNode, SecondaryNode
-from core.models.data import InputData, train_test_data_setup
-from core.repository.dataset_types import DataTypesEnum
-from core.repository.quality_metrics_repository import MetricsRepository, RegressionMetricsEnum
-from core.repository.tasks import Task, TaskTypesEnum
+from fedot.core.composer.chain import Chain
+from fedot.core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
+from fedot.core.composer.node import PrimaryNode, SecondaryNode
+from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.repository.dataset_types import DataTypesEnum
+from fedot.core.repository.quality_metrics_repository import MetricsRepository, RegressionMetricsEnum
+from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 
 def compose_chain(data: InputData) -> Chain:
-    dummy_composer = DummyComposer(DummyChainTypeEnum.hierarchical)
     composer_requirements = ComposerRequirements(primary=['lasso', 'ridge'],
                                                  secondary=['linear'])
 
     metric_function = MetricsRepository().metric_by_id(RegressionMetricsEnum.RMSE)
+    dummy_composer = DummyComposer(dummy_chain_type=DummyChainTypeEnum.hierarchical, initial_chain=None,
+                                   composer_requirements=composer_requirements,
+                                   metrics=metric_function)
 
-    chain = dummy_composer.compose_chain(data=data,
-                                         initial_chain=None,
-                                         composer_requirements=composer_requirements,
-                                         metrics=metric_function, is_visualise=False)
+    chain = dummy_composer.compose_chain(data=data, is_visualise=False)
     return chain
 
 

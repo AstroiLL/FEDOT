@@ -5,12 +5,12 @@ import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.metrics import roc_auc_score as roc_auc
 
-from core.composer.chain import Chain
-from core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
-from core.models.data import InputData, train_test_data_setup
-from core.repository.dataset_types import DataTypesEnum
-from core.repository.quality_metrics_repository import ClassificationMetricsEnum, MetricsRepository
-from core.repository.tasks import Task, TaskTypesEnum
+from fedot.core.composer.chain import Chain
+from fedot.core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
+from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.repository.dataset_types import DataTypesEnum
+from fedot.core.repository.quality_metrics_repository import ClassificationMetricsEnum, MetricsRepository
+from fedot.core.repository.tasks import Task, TaskTypesEnum
 
 np.random.seed(1)
 random.seed(1)
@@ -20,16 +20,15 @@ CORRECT_MODEL_AUC_THR = 0.25
 
 
 def compose_chain(data: InputData) -> Chain:
-    dummy_composer = DummyComposer(DummyChainTypeEnum.hierarchical)
     composer_requirements = ComposerRequirements(primary=['logit'],
                                                  secondary=['logit', 'xgboost'])
 
     metric_function = MetricsRepository().metric_by_id(ClassificationMetricsEnum.ROCAUC)
+    dummy_composer = DummyComposer(dummy_chain_type=DummyChainTypeEnum.hierarchical, initial_chain=None,
+                                   composer_requirements=composer_requirements,
+                                   metrics=metric_function)
 
-    chain = dummy_composer.compose_chain(data=data,
-                                         initial_chain=None,
-                                         composer_requirements=composer_requirements,
-                                         metrics=metric_function, is_visualise=False)
+    chain = dummy_composer.compose_chain(data=data, is_visualise=False)
     return chain
 
 

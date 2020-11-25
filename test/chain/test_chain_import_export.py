@@ -5,10 +5,10 @@ import shutil
 import pytest
 
 from cases.data.data_utils import get_scoring_case_data_paths
-from core.composer.chain import Chain
-from core.composer.node import PrimaryNode, SecondaryNode
-from core.models.data import InputData
-from utilities.synthetic.chain_template_new import ChainTemplate, extract_subtree_root
+from fedot.core.composer.chain import Chain
+from fedot.core.composer.node import PrimaryNode, SecondaryNode
+from fedot.core.models.data import InputData
+from fedot.utilities.synthetic.chain_template_new import ChainTemplate, extract_subtree_root
 from test.chain.test_atomized_model import create_chain_with_several_nested_atomized_model
 
 

@@ -1,23 +1,24 @@
 import numpy as np
 
-from core.composer.chain import Chain
-from core.composer.composer import ComposerRequirements, DummyChainTypeEnum, DummyComposer
-from core.models.data import InputData, train_test_data_setup
-from core.repository.quality_metrics_repository import ClassificationMetricsEnum, MetricsRepository
+from fedot.core.composer.chain import Chain
+from fedot.core.composer.composer import ComposerRequirements, DummyChainTypeEnum, \
+    DummyComposer
+from fedot.core.models.data import InputData, train_test_data_setup
+from fedot.core.repository.quality_metrics_repository import ClassificationMetricsEnum, \
+    MetricsRepository
 from test.models.test_split_train_test import get_roc_auc_value, get_synthetic_input_data
 
 
 def compose_chain(data: InputData) -> Chain:
-    dummy_composer = DummyComposer(DummyChainTypeEnum.hierarchical)
     composer_requirements = ComposerRequirements(primary=['kmeans', 'kmeans'],
                                                  secondary=['logit'])
 
     metric_function = MetricsRepository().metric_by_id(ClassificationMetricsEnum.ROCAUC)
+    dummy_composer = DummyComposer(dummy_chain_type=DummyChainTypeEnum.hierarchical, initial_chain=None,
+                                   composer_requirements=composer_requirements,
+                                   metrics=metric_function)
 
-    chain = dummy_composer.compose_chain(data=data,
-                                         initial_chain=None,
-                                         composer_requirements=composer_requirements,
-                                         metrics=metric_function, is_visualise=False)
+    chain = dummy_composer.compose_chain(data=data, is_visualise=False)
     return chain
 
 
@@ -26,7 +27,6 @@ def test_chain_with_clusters_fit_correct():
 
     # mean ROC AUC is analysed because of stochastic clustering
     for _ in range(5):
-
         data = get_synthetic_input_data(n_samples=10000)
 
         chain = compose_chain(data=data)
