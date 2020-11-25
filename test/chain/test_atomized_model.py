@@ -1,9 +1,9 @@
 import pytest
 
-from core.composer.chain import Chain
-from core.composer.node import PrimaryNode, SecondaryNode
-from core.models.atomized_model import AtomizedModel
-from core.models.data import InputData
+from fedot.core.composer.chain import Chain
+from fedot.core.composer.node import PrimaryNode, SecondaryNode
+from fedot.core.models.atomized_model import AtomizedModel
+from fedot.core.models.data import InputData
 from cases.data.data_utils import get_scoring_case_data_paths
 
 
