@@ -48,7 +48,7 @@ class ChainTemplate:
         else:
             nodes_from = []
 
-        if node.model.model_type == 'chain_model':
+        if node.model.model_type == 'atomized_model':
             model_template = AtomizedModelTemplate(node, model_id, nodes_from, self.unique_chain_id)
         else:
             model_template = ModelTemplate(node, model_id, nodes_from, self.unique_chain_id)
@@ -155,12 +155,12 @@ class ChainTemplate:
         model_objects = chain_json['nodes']
 
         for model_object in model_objects:
-            if model_object['model_type'] == 'chain_model':
+            if model_object['model_type'] == 'atomized_model':
                 model_template = AtomizedModelTemplate()
 
-                # create recursive ChainModels
+                # create recursive AtomizedModel
                 chain = Chain()
-                chain.load_chain(model_object['chain_model_json_path'])
+                chain.load_chain(model_object['atomized_model_json_path'])
                 model_template.next_chain_template = AtomizedModel(chain)
                 model_template.chain_template = ChainTemplate(chain)
             else:
@@ -190,12 +190,12 @@ def _roll_chain_structure(model_object: ['ModelTemplate', 'AtomizedModelTemplate
     if model_object.model_id in visited_nodes:
         return visited_nodes[model_object.model_id]
 
-    if model_object.model_type == 'chain_model':
-        model = model_object.next_chain_template
+    if model_object.model_type == 'atomized_model':
+        atomized_model = model_object.next_chain_template
         if model_object.nodes_from:
-            node = SecondaryNode(model_type='chain_model', model=model)
+            node = SecondaryNode(model_type='atomized_model', atomized_model=atomized_model)
         else:
-            node = PrimaryNode(model_type='chain_model', model=model)
+            node = PrimaryNode(model_type='atomized_model', atomized_model=atomized_model)
 
     else:
         if model_object.nodes_from:
@@ -224,8 +224,8 @@ def _roll_chain_structure(model_object: ['ModelTemplate', 'AtomizedModelTemplate
 
 class ModelTemplateAbstract(ABC):
     """
-    Base class used for create different types of Model("chain_model" or others like("knn", "xgboost")).
-    Chain_model is atomized chain which can uses like general model.
+    Base class used for create different types of Model("atomized_model" or others like("knn", "xgboost")).
+    Atomized_model is atomized chain which can uses like general model.
     """
 
     def __init__(self):
@@ -335,7 +335,7 @@ class AtomizedModelTemplate(ModelTemplateAbstract):
     def __init__(self, node: Node = None, model_id: int = None,
                  nodes_from: list = None, chain_id: str = None):
         super().__init__()
-        self.chain_model_json_path = None
+        self.atomized_model_json_path = None
         self.next_chain_template = None
         self.chain_template = None
 
@@ -354,13 +354,13 @@ class AtomizedModelTemplate(ModelTemplateAbstract):
         path_to_save = self._create_nested_path(path)
 
         self.chain_template.export_to_json(path_to_save)
-        self.chain_model_json_path = path_to_save
+        self.atomized_model_json_path = path_to_save
 
         model_object = {
             "model_id": self.model_id,
             "model_type": self.model_type,
             "nodes_from": self.nodes_from,
-            "chain_model_json_path": self.chain_model_json_path
+            "atomized_model_json_path": self.atomized_model_json_path
         }
 
         return model_object
@@ -386,13 +386,13 @@ class AtomizedModelTemplate(ModelTemplateAbstract):
         return absolute_path_to_parent_dir
 
     def import_from_json(self, model_object: dict):
-        required_fields = ['model_id', 'model_type', 'nodes_from', 'chain_model_json_path']
+        required_fields = ['model_id', 'model_type', 'nodes_from', 'atomized_model_json_path']
         _validate_json_model_template(model_object, required_fields)
 
         self.model_id = model_object['model_id']
         self.model_type = model_object['model_type']
         self.nodes_from = model_object['nodes_from']
-        self.chain_model_json_path = model_object['chain_model_json_path']
+        self.atomized_model_json_path = model_object['atomized_model_json_path']
 
 
 def _validate_json_model_template(model_object: dict, required_fields: List[str]):

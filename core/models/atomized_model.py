@@ -9,17 +9,17 @@ from core.repository.model_types_repository import ModelMetaInfo
 class AtomizedModel(Model):
     def __init__(self, chain: 'Chain'):
         if not chain.root_node:
-            raise ValueError(f'ChainModel could not create instance of empty Chain!')
+            raise ValueError(f'AtomizedModel could not create instance of empty Chain!')
 
-        super().__init__('chain_model')
+        super().__init__('atomized_model')
         self.chain = chain
         self.unique_id = uuid4()
 
     def fit(self, data: InputData):
         predicted_train = self.chain.fit(input_data=data, verbose=False)
-        fitted_chain_model_head = self.chain.root_node
+        fitted_atomized_model_head = self.chain.root_node
 
-        return fitted_chain_model_head, predicted_train.predict
+        return fitted_atomized_model_head, predicted_train.predict
 
     def predict(self, fitted_model, data: InputData):
         prediction = self.chain.predict(input_data=data)
@@ -28,7 +28,10 @@ class AtomizedModel(Model):
 
     def fine_tune(self, data: InputData, iterations: int,
                   max_lead_time: timedelta = timedelta(minutes=5)):
-        self.chain.fine_tune_all_nodes(input_data=data)
+        from core.composer.chain_tune import Tune
+        self.chain = Tune(self.chain, verbose=True).fine_tune_root_node(input_data=data,
+                                                                        max_lead_time=max_lead_time,
+                                                                        iterations=iterations)
 
     @property
     def metadata(self) -> ModelMetaInfo:
