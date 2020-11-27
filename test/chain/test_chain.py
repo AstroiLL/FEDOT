@@ -220,3 +220,36 @@ def test_chain_with_custom_params_for_model(data_setup):
     default_params_prediction = chain_default_params.predict(data).predict
 
     assert not np.array_equal(custom_params_prediction, default_params_prediction)
+
+
+def test_chain_str():
+    # given
+    first = PrimaryNode(model_type='logit')
+    second = PrimaryNode(model_type='lda')
+    third = PrimaryNode(model_type='knn')
+    final = SecondaryNode(model_type='xgboost',
+                          nodes_from=[first, second, third])
+    chain = Chain()
+    chain.add_node(final)
+
+    expected_chain_description = "{'depth': 2, 'length': 4, 'nodes': [xgboost, logit, lda, knn]}"
+
+    # when
+    actual_chain_description = str(chain)
+
+    # then
+    assert actual_chain_description == expected_chain_description
+
+
+def test_cahin_repr():
+    first = PrimaryNode(model_type='logit')
+    second = PrimaryNode(model_type='lda')
+    third = PrimaryNode(model_type='knn')
+    final = SecondaryNode(model_type='xgboost',
+                          nodes_from=[first, second, third])
+    chain = Chain()
+    chain.add_node(final)
+
+    expected_chain_description = "{'depth': 2, 'length': 4, 'nodes': [xgboost, logit, lda, knn]}"
+
+    assert repr(chain) == expected_chain_description
